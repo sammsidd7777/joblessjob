@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /find-job
+Allow: /jobs/
+Allow: /companies
+Allow: /company/
+
+# Private, login-gated areas — no value to a crawler, and indexing
+# them could leak account-only pages into search results
+Disallow: /candidate
+Disallow: /hr
+
+Sitemap: https://job-hunt-backend-sigma.vercel.app/sitemap.xml
