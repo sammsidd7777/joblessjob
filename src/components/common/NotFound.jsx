@@ -34,7 +34,7 @@ const NotFound = () => {
             Go home
           </Link>
           <Link
-            to="/find-job"
+            to="/find-job/*"
             className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 dark:border-white/10 dark:text-slate-200"
           >
             Browse jobs

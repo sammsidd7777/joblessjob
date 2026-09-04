@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -12,21 +13,20 @@ import {
   LogOut,
   LayoutDashboard,
   ChevronDown,
+  Plus,
 } from "lucide-react";
 
 import AuthPage from "../Auth/AuthPage";
-
 import { logout } from "../../redux/authSlice";
 import { useLogoutUserMutation } from "../../RTK/AuthService";
 import AnimatedBrand from "./AnimatedBrand";
 
 const Header = () => {
-  // =====================================================
-  // AUTH STATE
-  // =====================================================
-
   const [isLoginCard, setIsLoginCard] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const profileRef = useRef(null);
 
   const user = useSelector((state) => state.auth.user);
 
@@ -35,406 +35,551 @@ const Header = () => {
 
   const [logoutUser, { isLoading }] = useLogoutUserMutation();
 
-  // =====================================================
-  // DESKTOP NAVIGATION
-  // =====================================================
+  /* ---------------------------------------------
+     SCROLL EFFECT
+  --------------------------------------------- */
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
 
-  const navLinks = [
-    {
-      name: "Find Jobs",
-      path: "/find-job",
-      icon: BriefcaseBusiness,
-    },
-    {
-      name: "Companies",
-      path: "/companies",
-      icon: Building2,
-    },
-  ];
+    handleScroll();
 
-  // =====================================================
-  // MOBILE NAVIGATION
-  // =====================================================
+    window.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
 
-  const mobileNavLinks = [
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  /* ---------------------------------------------
+     CLOSE PROFILE WHEN CLICKING OUTSIDE
+  --------------------------------------------- */
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target)
+      ) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
+
+  /* ---------------------------------------------
+     LOGOUT
+  --------------------------------------------- */
+  const handleLogout = async () => {
+    dispatch(logout());
+    setIsProfileOpen(false);
+
+    try {
+      await logoutUser().unwrap();
+    } catch {
+      // Local logout is already completed.
+    }
+
+    navigate("/");
+  };
+
+  /* ---------------------------------------------
+     DESKTOP NAV
+  --------------------------------------------- */
+  const desktopLinks = [
     {
       name: "Home",
       path: "/",
-      icon: Home,
     },
     {
       name: "Jobs",
       path: "/find-job",
-      icon: BriefcaseBusiness,
     },
     {
       name: "Companies",
       path: "/companies",
-      icon: Building2,
     },
+    ...(user
+      ? [
+          {
+            name: "Saved",
+            path: "/candidate/saved-jobs",
+          },
+        ]
+      : []),
   ];
 
-  // =====================================================
-  // LOGOUT
-  // =====================================================
-
-  const handleLogout = async () => {
-    try {
-      setIsProfileOpen(false);
-
-      dispatch(logout());
-
-      try {
-        await logoutUser().unwrap();
-      } catch (error) {
-        console.error("Backend logout failed:", error);
-      }
-
-      navigate("/");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
-
-  // =====================================================
-  // LOGIN
-  // =====================================================
-
-  const handleLogin = () => {
-    setIsLoginCard(true);
-  };
-
-  // =====================================================
-  // CLOSE LOGIN
-  // =====================================================
-
-  const handleCloseLogin = () => {
-    setIsLoginCard(false);
-  };
+  /* ---------------------------------------------
+     MOBILE NAV
+  --------------------------------------------- */
+  const mobileLinks = user
+    ? [
+        {
+          name: "Home",
+          path: "/",
+          icon: Home,
+        },
+        {
+          name: "Jobs",
+          path: "/find-job",
+          icon: BriefcaseBusiness,
+        },
+        {
+          name: "Companies",
+          path: "/companies",
+          icon: Building2,
+        },
+        {
+          name: "Saved",
+          path: "/candidate/saved-jobs",
+          icon: Bookmark,
+        },
+        
+      ]
+    : [
+        {
+          name: "Home",
+          path: "/",
+          icon: Home,
+        },
+        {
+          name: "Jobs",
+          path: "/find-job",
+          icon: BriefcaseBusiness,
+        },
+        {
+          name: "Companies",
+          path: "/companies",
+          icon: Building2,
+        },
+      
+      ];
 
   return (
     <>
       {/* =====================================================
-          HEADER
+          FLOATING HEADER
       ===================================================== */}
+     <header
+  className="
+    pointer-events-none
+    fixed
+    inset-x-0
+    top-0
+    z-[200]
+    px-2.5
+    pt-2.5
 
-      <header
-        className="
-          sticky top-0 z-50 w-full
-          border-b border-slate-200/70
-          bg-white/90
-          backdrop-blur-2xl
-          dark:border-slate-800
-          dark:bg-slate-950/90
-        "
-      >
-        <nav
-          className="
-            mx-auto flex
-            h-[64px]
-            max-w-7xl
-            items-center
-            justify-between
-            px-4
-            sm:h-[70px]
-            sm:px-6
-            lg:h-[76px]
-            lg:px-8
-          "
-        >
-          {/* =====================================================
-              LOGO
-          ===================================================== */}
+    drop-shadow-[0_-8px_30px_rgba(245,215,110,0.18)]
 
-         {/* =====================================================
-    LOGO / BRAND
-===================================================== */}
-
-<Link
-  to="/"
-  onClick={() => setIsProfileOpen(false)}
-  className="group flex items-center gap-2.5"
+    sm:px-4
+    sm:pt-3
+    md:px-5
+    lg:px-7
+  "
 >
-  {/* Logo Icon */}
-  <div
-    className="
-      relative flex
-      h-9 w-9
-      shrink-0
-      items-center justify-center
-      overflow-hidden
-      rounded-xl
-      bg-slate-950
-      shadow-[3px_3px_0_#a855f7]
-      transition-all
-      duration-300
-      group-hover:-translate-y-0.5
-      group-hover:shadow-[4px_4px_0_#a855f7]
-      sm:h-10
-      sm:w-10
-      lg:h-12
-      lg:w-12
-      lg:rounded-2xl
-    "
-  >
-    <img
-      src="/favicon.png"
-      alt="JoblessJob"
-      className="
-        h-full
-        w-full
-        rounded-xl
-        object-contain
-        lg:rounded-2xl
-      "
-    />
-  </div>
+        <nav
+          className={`
+            pointer-events-auto
+            relative
+            mx-auto
+            flex
+            h-[58px]
+            w-full
+            max-w-[1340px]
+            items-center
+            rounded-[18px]
+            border
+            px-2.5
+            transition-all
+            duration-500
 
-  {/* =================================================
-      BRAND
-  ================================================= */}
+            sm:h-[64px]
+            sm:rounded-[20px]
+            sm:px-3
 
-  <div className="block">
-    <div
-      className="
-        flex
-        items-center
-        text-xl
-        font-black
-        leading-none
-        tracking-[-0.05em]
-        text-white
-        sm:text-2xl
-        lg:text-2xl
-      "
-    >
-      <AnimatedBrand />
-    </div>
+            md:h-[68px]
+            md:px-4
 
-    {/* Desktop tagline only */}
-    <p
-      className="
-        mt-1
-        hidden
-        text-[10px]
-        font-medium
-        tracking-wide
-        text-slate-400
-        lg:block
-      "
-    >
-      From Jobless to Hired 🚀
-    </p>
-  </div>
-</Link>
+            lg:h-[72px]
+            lg:rounded-[22px]
+            lg:px-5
 
-          {/* =====================================================
-              DESKTOP NAVIGATION
-          ===================================================== */}
+            ${
+              isScrolled
+                ? `
+                  border-amber-300/20
+                  bg-[#080b0b]/92
+                  shadow-[0_18px_60px_rgba(0,0,0,.38)]
+                  backdrop-blur-2xl
+                `
+                : `
+                  border-white/[0.09]
+                  bg-[#071012]/75
+                  shadow-[0_10px_40px_rgba(0,0,0,.20)]
+                  backdrop-blur-xl
+                `
+            }
+          `}
+        >
+          {/* TOP GOLD HAIRLINE */}
+          <span
+            className="
+              pointer-events-none
+              absolute
+              left-[8%]
+              right-[8%]
+              top-0
+              h-px
+              bg-gradient-to-r
+              from-transparent
+              via-amber-300/40
+              to-transparent
+            "
+          />
 
-          <div className="hidden items-center gap-10 lg:flex">
-            {navLinks.map((item) => {
-              const Icon = item.icon;
+          {/* =================================================
+              BRAND
+          ================================================= */}
+          <Link
+            to="/"
+            onClick={() => setIsProfileOpen(false)}
+            aria-label="JoblessJob home"
+            className="
+              group
+              flex
+              min-w-0
+              shrink-0
+              items-center
+              gap-2
+              rounded-xl
+              pr-1
+              outline-none
+              focus-visible:ring-2
+              focus-visible:ring-[#F5D76E]
 
-              return (
-                <NavLink
-                  key={item.name}
-                  to={item.path}
-                  className={({ isActive }) => `
-                    group
-                    relative
-                    flex
-                    items-center
-                    gap-2
-                    py-2
-                    text-sm
-                    font-semibold
-                    transition-all
-                    duration-300
+              sm:gap-2.5
+              sm:pr-2
 
-                    ${
-                      isActive
-                        ? "text-blue-600 dark:text-blue-400"
-                        : "text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400"
-                    }
+              md:gap-3
+            "
+          >
+            {/* LOGO */}
+            <span
+              className="
+                relative
+                flex
+                h-8
+                w-8
+                shrink-0
+                items-center
+                justify-center
+                overflow-hidden
 
-                    after:absolute
-                    after:bottom-0
-                    after:left-0
-                    after:h-[2px]
-                    after:rounded-full
-                    after:bg-gradient-to-r
-                    after:from-blue-600
-                    after:to-purple-600
-                    after:transition-all
-                    after:duration-300
+                sm:h-9
+                sm:w-9
 
-                    ${
-                      isActive
-                        ? "after:w-full"
-                        : "after:w-0 hover:after:w-full"
-                    }
-                  `}
-                >
-                  <Icon
-                    size={17}
-                    strokeWidth={2}
-                    className="
-                      transition-transform
-                      duration-300
-                      group-hover:-translate-y-0.5
-                    "
-                  />
+                md:h-10
+                md:w-10
+              "
+            >
+              <img
+                src="./favicon.png"
+                alt=""
+                className="object-contain w-12"
+              />
 
-                  {item.name}
-                </NavLink>
-              );
-            })}
-          </div>
-
-          {/* =====================================================
-              DESKTOP RIGHT SIDE
-          ===================================================== */}
-
-          <div className="hidden items-center gap-4 lg:flex">
-            {!user ? (
-              <button
-                type="button"
-                onClick={handleLogin}
+              <span
                 className="
-                  group
-                  flex
-                  items-center
-                  gap-2
-                  rounded-xl
-                  bg-slate-950
-                  px-5
-                  py-3
-                  text-sm
-                  font-bold
+                  pointer-events-none
+                  absolute
+                  inset-0
+                  bg-gradient-to-br
+                  from-white/10
+                  via-transparent
+                  to-amber-300/10
+                "
+              />
+            </span>
+
+            {/* BRAND TEXT */}
+            <span className="min-w-0">
+              <span
+                className="
+                  block
+                  truncate
+                  text-[16px]
+                  font-extrabold
+                  leading-none
+                  tracking-[-0.055em]
                   text-white
-                  shadow-lg
-                  transition-all
-                  duration-300
-                  hover:-translate-y-0.5
-                  hover:bg-blue-600
-                  hover:shadow-xl
-                  hover:shadow-blue-500/20
-                  active:scale-95
-                  dark:bg-white
-                  dark:text-slate-950
-                  dark:hover:bg-blue-600
-                  dark:hover:text-white
+
+                  sm:text-[18px]
+
+                  md:text-[20px]
+
+                  lg:text-[21px]
                 "
               >
-                <LogIn
-                  size={18}
-                  className="
-                    transition-transform
-                    duration-300
-                    group-hover:translate-x-0.5
-                  "
-                />
+                <AnimatedBrand />
+              </span>
 
-                Login / Sign Up
-              </button>
+              <span
+                className="
+                  mt-1
+                  hidden
+                  text-[9px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.15em]
+                  text-white/35
+
+                  md:block
+                "
+              >
+                Find your next yes
+              </span>
+            </span>
+          </Link>
+
+          {/* =================================================
+              DESKTOP / TABLET NAV
+          ================================================= */}
+          <div
+            className="
+              mx-auto
+              hidden
+              h-full
+              items-center
+              justify-center
+              gap-0.5
+
+              md:flex
+            "
+          >
+            {desktopLinks.map(({ name, path }) => (
+              <NavLink
+                key={name}
+                to={path}
+                end={path === "/"}
+                className={({ isActive }) => `
+                  group
+                  relative
+                  flex
+                  h-10
+                  items-center
+                  rounded-xl
+                  px-3
+                  text-[12px]
+                  font-semibold
+                  transition-all
+                  duration-300
+
+                  lg:px-4
+                  lg:text-[13px]
+
+                  ${
+                    isActive
+                      ? "text-white"
+                      : "text-white/50 hover:bg-white/[0.045] hover:text-white"
+                  }
+                `}
+              >
+                {({ isActive }) => (
+                  <>
+                    {name}
+
+                    <span
+                      className={`
+                        absolute
+                        bottom-1
+                        left-1/2
+                        h-[2px]
+                        -translate-x-1/2
+                        rounded-full
+                        bg-[#F5D76E]
+                        transition-all
+                        duration-300
+
+                        ${
+                          isActive
+                            ? "w-5"
+                            : "w-0 group-hover:w-4"
+                        }
+                      `}
+                    />
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
+
+          {/* =================================================
+              RIGHT SIDE ACTIONS
+          ================================================= */}
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+            {!user ? (
+              <>
+              
+
+                {/* LOGIN */}
+              <button
+  type="button"
+  onClick={() => setIsLoginCard(true)}
+  className="
+    group
+    inline-flex
+    h-9
+    items-center
+    justify-center
+    gap-1.5
+    rounded-full
+    border
+    border-[#F5D76E]/25
+    bg-[#F5D76E]
+    px-3.5
+    text-[11px]
+    font-extrabold
+    text-[#0a0b09]
+    shadow-[0_7px_24px_rgba(212,175,55,.13)]
+    transition-all
+    duration-300
+
+    hover:-translate-y-0.5
+    hover:bg-[#FFF2A8]
+    hover:shadow-[0_10px_30px_rgba(212,175,55,.22)]
+
+    focus-visible:outline-none
+    focus-visible:ring-2
+    focus-visible:ring-[#F5D76E]
+
+    sm:h-10
+    sm:px-4
+    sm:text-[12px]
+
+    md:h-11
+    md:px-5
+    md:text-[13px]
+  "
+>
+  <span>Login</span>
+
+  <span
+    className="
+      inline-block
+      transition-transform
+      duration-300
+      group-hover:translate-x-0.5
+    "
+  >
+    →
+  </span>
+</button>
+              </>
             ) : (
-              <div className="relative">
-                {/* Profile Button */}
-
+              /* =============================================
+                 LOGGED IN PROFILE
+              ============================================= */
+              <div
+                ref={profileRef}
+                className="relative"
+              >
                 <button
                   type="button"
                   onClick={() =>
-                    setIsProfileOpen((prev) => !prev)
+                    setIsProfileOpen((value) => !value)
                   }
+                  aria-expanded={isProfileOpen}
+                  aria-haspopup="menu"
                   className="
                     group
                     flex
+                    h-10
                     items-center
-                    gap-3
-                    rounded-2xl
+                    gap-1.5
+                    rounded-full
                     border
-                    border-slate-200
-                    bg-white
-                    px-3
-                    py-2
-                    shadow-sm
-                    transition-all
-                    duration-300
-                    hover:border-blue-300
-                    hover:shadow-lg
-                    dark:border-slate-700
-                    dark:bg-slate-900
-                  "
-                  aria-expanded={isProfileOpen}
-                  aria-haspopup="menu"
-                >
-                  {/* Avatar */}
+                    border-white/10
+                    bg-white/[0.045]
+                    pl-1
+                    pr-2
+                    transition
 
-                  <div
+                    hover:border-amber-200/25
+                    hover:bg-white/[0.07]
+
+                    focus-visible:outline-none
+                    focus-visible:ring-2
+                    focus-visible:ring-[#F5D76E]
+
+                    sm:h-11
+                    sm:gap-2
+                    sm:pl-1.5
+                    sm:pr-3
+                  "
+                >
+                  {/* AVATAR */}
+                  <span
                     className="
                       flex
-                      h-9
-                      w-9
+                      h-8
+                      w-8
+                      shrink-0
                       items-center
                       justify-center
                       overflow-hidden
-                      rounded-xl
+                      rounded-full
+                      border
+                      border-amber-200/20
                       bg-gradient-to-br
-                      from-blue-600
-                      to-purple-600
-                      text-white
+                      from-[#FFF4B0]
+                      via-[#D4AF37]
+                      to-[#8A650A]
+                      text-[#090a08]
                     "
                   >
                     {user?.profileImage ? (
                       <img
                         src={user.profileImage}
                         alt=""
-                        className="
-                          h-full
-                          w-full
-                          object-cover
-                        "
+                        className="h-full w-full object-cover"
                       />
                     ) : (
-                      <User size={18} />
+                      <User size={16} />
                     )}
-                  </div>
+                  </span>
 
-                  {/* User Details */}
+                  {/* USER NAME */}
+                  <span
+                    className="
+                      hidden
+                      max-w-24
+                      truncate
+                      text-[12px]
+                      font-bold
+                      text-white
 
-                  <div className="hidden text-left xl:block">
-                    <p
-                      className="
-                        max-w-[130px]
-                        truncate
-                        text-sm
-                        font-bold
-                        text-slate-800
-                        dark:text-white
-                      "
-                    >
-                      {user?.name || "Candidate"}
-                    </p>
-
-                    <p
-                      className="
-                        text-[10px]
-                        text-slate-400
-                      "
-                    >
-                      Candidate
-                    </p>
-                  </div>
-
-                  {/* Arrow */}
+                      lg:block
+                      xl:max-w-32
+                    "
+                  >
+                    {user?.name || "Profile"}
+                  </span>
 
                   <ChevronDown
-                    size={15}
+                    size={14}
                     className={`
-                      text-slate-400
+                      text-white/40
                       transition-transform
                       duration-300
+
                       ${
                         isProfileOpen
                           ? "rotate-180"
@@ -444,67 +589,47 @@ const Header = () => {
                   />
                 </button>
 
-                {/* =================================================
-                    PROFILE DROPDOWN
-                ================================================= */}
-
+                {/* PROFILE DROPDOWN */}
                 {isProfileOpen && (
                   <div
                     className="
                       absolute
                       right-0
-                      top-[58px]
-                      w-64
+                      top-[calc(100%+10px)]
+                      z-50
+                      w-[calc(100vw-24px)]
+                      max-w-[280px]
                       overflow-hidden
                       rounded-2xl
                       border
-                      border-slate-200
-                      bg-white
+                      border-amber-200/10
+                      bg-[#111513]/96
                       p-2
-                      shadow-2xl
-                      shadow-slate-900/10
-                      dark:border-slate-700
-                      dark:bg-slate-900
+                      shadow-[0_24px_70px_rgba(0,0,0,.45)]
+                      backdrop-blur-2xl
+
+                      sm:w-64
                     "
                   >
-                    {/* User Info */}
-
+                    {/* USER INFO */}
                     <div
                       className="
                         border-b
-                        border-slate-100
+                        border-white/[0.07]
                         px-3
                         py-3
-                        dark:border-slate-800
                       "
                     >
-                      <p
-                        className="
-                          truncate
-                          text-sm
-                          font-bold
-                          text-slate-900
-                          dark:text-white
-                        "
-                      >
+                      <p className="truncate text-sm font-bold text-white">
                         {user?.name || "Candidate"}
                       </p>
 
-                      <p
-                        className="
-                          mt-0.5
-                          truncate
-                          text-xs
-                          text-slate-500
-                          dark:text-slate-400
-                        "
-                      >
+                      <p className="mt-0.5 truncate text-xs text-white/40">
                         {user?.email || ""}
                       </p>
                     </div>
 
-                    {/* Dashboard */}
-
+                    {/* DASHBOARD */}
                     <Link
                       to="/candidate"
                       onClick={() =>
@@ -513,196 +638,218 @@ const Header = () => {
                       className="
                         mt-2
                         flex
+                        min-h-11
                         items-center
                         gap-3
                         rounded-xl
                         px-3
-                        py-3
                         text-sm
                         font-medium
-                        text-slate-700
+                        text-white/65
                         transition
-                        hover:bg-blue-50
-                        hover:text-blue-600
-                        dark:text-slate-300
-                        dark:hover:bg-slate-800
-                        dark:hover:text-blue-400
+
+                        hover:bg-white/[0.06]
+                        hover:text-white
                       "
                     >
                       <LayoutDashboard size={17} />
-
-                      Candidate Dashboard
+                      Dashboard
                     </Link>
 
-                    {/* Saved Jobs */}
-
+                    {/* SAVED JOBS */}
                     <Link
-                      to="/saved-jobs"
+                      to="/candidate/saved-jobs"
                       onClick={() =>
                         setIsProfileOpen(false)
                       }
                       className="
                         flex
+                        min-h-11
                         items-center
                         gap-3
                         rounded-xl
                         px-3
-                        py-3
                         text-sm
                         font-medium
-                        text-slate-700
+                        text-white/65
                         transition
-                        hover:bg-blue-50
-                        hover:text-blue-600
-                        dark:text-slate-300
-                        dark:hover:bg-slate-800
-                        dark:hover:text-blue-400
+
+                        hover:bg-white/[0.06]
+                        hover:text-white
                       "
                     >
                       <Bookmark size={17} />
-
-                      Saved Jobs
+                      Saved jobs
                     </Link>
 
-                    {/* Divider */}
-
-                    <div
-                      className="
-                        my-1
-                        h-px
-                        bg-slate-100
-                        dark:bg-slate-800
-                      "
-                    />
-
-                    {/* Logout */}
-
+                    {/* LOGOUT */}
                     <button
                       type="button"
                       onClick={handleLogout}
                       disabled={isLoading}
                       className="
+                        mt-1
                         flex
+                        min-h-11
                         w-full
                         items-center
                         gap-3
                         rounded-xl
                         px-3
-                        py-3
                         text-sm
                         font-medium
-                        text-red-500
+                        text-red-300
                         transition
-                        hover:bg-red-50
-                        disabled:cursor-not-allowed
+
+                        hover:bg-red-500/10
+
                         disabled:opacity-50
-                        dark:hover:bg-red-950/30
                       "
                     >
                       <LogOut size={17} />
 
                       {isLoading
-                        ? "Logging out..."
-                        : "Logout"}
+                        ? "Logging out…"
+                        : "Log out"}
                     </button>
                   </div>
                 )}
               </div>
             )}
           </div>
+
+        
         </nav>
       </header>
 
       {/* =====================================================
-          MOBILE + TABLET BOTTOM NAVIGATION
+          MOBILE BOTTOM NAVIGATION
+          Only below md
       ===================================================== */}
-
       <nav
         className="
           fixed
+          inset-x-0
           bottom-0
-          left-0
-          right-0
-          z-[100]
+          z-[190]
           border-t
-          border-slate-200/80
-          bg-white/95
-          shadow-[0_-5px_20px_rgba(0,0,0,0.08)]
-          backdrop-blur-xl
-          dark:border-slate-800
-          dark:bg-slate-950/95
-          lg:hidden
+          border-white/[0.08]
+          bg-[#080b0b]/96
+          pb-[env(safe-area-inset-bottom)]
+          backdrop-blur-2xl
+
+          md:hidden
         "
       >
         <div
           className="
             mx-auto
             grid
-            h-[68px]
+            h-[64px]
+            w-full
             max-w-lg
-            grid-cols-4
+            px-1
+
+            sm:h-[68px]
           "
+          style={{
+            gridTemplateColumns: `repeat(${mobileLinks.length}, minmax(0, 1fr))`,
+          }}
         >
-          {mobileNavLinks.map((item) => {
+          {mobileLinks.map((item) => {
             const Icon = item.icon;
 
+            /* LOGIN BUTTON */
+            if (item.action) {
+              return (
+                <button
+                  key={item.name}
+                  type="button"
+                  onClick={item.action}
+                  className="
+                    flex
+                    min-h-11
+                    flex-col
+                    items-center
+                    justify-center
+                    gap-0.5
+                    text-white/40
+                    transition
+                    active:scale-95
+                  "
+                >
+                  <span
+                    className="
+                      flex
+                      h-8
+                      w-10
+                      items-center
+                      justify-center
+                      rounded-xl
+                    "
+                  >
+                    <Icon size={19} />
+                  </span>
+
+                  <span className="text-[9px] font-semibold sm:text-[10px]">
+                    {item.name}
+                  </span>
+                </button>
+              );
+            }
+
+            /* NAV LINK */
             return (
               <NavLink
                 key={item.name}
                 to={item.path}
-                className={({ isActive }) =>
-                  `
-                    flex
-                    flex-col
-                    items-center
-                    justify-center
-                    gap-1
-                    transition-all
-                    duration-300
-                    active:scale-95
+                end={item.path === "/"}
+                className={({ isActive }) => `
+                  flex
+                  min-h-11
+                  flex-col
+                  items-center
+                  justify-center
+                  gap-0.5
+                  transition-all
+                  duration-200
+                  active:scale-95
 
-                    ${
-                      isActive
-                        ? "text-blue-600 dark:text-blue-400"
-                        : "text-slate-500 dark:text-slate-400"
-                    }
-                  `
-                }
+                  ${
+                    isActive
+                      ? "text-[#F5D76E]"
+                      : "text-white/40"
+                  }
+                `}
               >
                 {({ isActive }) => (
                   <>
-                    <div
+                    <span
                       className={`
                         flex
                         h-8
-                        w-11
+                        w-10
                         items-center
                         justify-center
                         rounded-xl
-                        transition-all
-                        duration-300
+                        transition
 
                         ${
                           isActive
-                            ? "bg-blue-50 shadow-sm shadow-blue-500/10 dark:bg-blue-950/40"
+                            ? "bg-[#F5D76E]/10"
                             : ""
                         }
                       `}
                     >
                       <Icon
-                        size={21}
+                        size={19}
                         strokeWidth={
                           isActive ? 2.5 : 2
                         }
                       />
-                    </div>
+                    </span>
 
-                    <span
-                      className="
-                        text-[10px]
-                        font-semibold
-                      "
-                    >
+                    <span className="text-[9px] font-semibold sm:text-[10px]">
                       {item.name}
                     </span>
                   </>
@@ -710,117 +857,12 @@ const Header = () => {
               </NavLink>
             );
           })}
-
-          {/* =================================================
-              MOBILE PROFILE / LOGIN
-          ================================================= */}
-
-          {user ? (
-            <NavLink
-              to="/candidate"
-              className={({ isActive }) =>
-                `
-                  flex
-                  flex-col
-                  items-center
-                  justify-center
-                  gap-1
-                  transition-all
-                  duration-300
-                  active:scale-95
-
-                  ${
-                    isActive
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-slate-500 dark:text-slate-400"
-                  }
-                `
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <div
-                    className={`
-                      flex
-                      h-8
-                      w-11
-                      items-center
-                      justify-center
-                      rounded-xl
-
-                      ${
-                        isActive
-                          ? "bg-blue-50 dark:bg-blue-950/40"
-                          : ""
-                      }
-                    `}
-                  >
-                    <User
-                      size={21}
-                      strokeWidth={
-                        isActive ? 2.5 : 2
-                      }
-                    />
-                  </div>
-
-                  <span
-                    className="
-                      text-[10px]
-                      font-semibold
-                    "
-                  >
-                    Profile
-                  </span>
-                </>
-              )}
-            </NavLink>
-          ) : (
-            <button
-              type="button"
-              onClick={handleLogin}
-              className="
-                flex
-                flex-col
-                items-center
-                justify-center
-                gap-1
-                text-slate-500
-                transition-all
-                duration-300
-                active:scale-95
-                dark:text-slate-400
-              "
-            >
-              <div
-                className="
-                  flex
-                  h-8
-                  w-11
-                  items-center
-                  justify-center
-                  rounded-xl
-                "
-              >
-                <LogIn size={21} />
-              </div>
-
-              <span
-                className="
-                  text-[10px]
-                  font-semibold
-                "
-              >
-                Login
-              </span>
-            </button>
-          )}
         </div>
       </nav>
 
       {/* =====================================================
-          LOGIN / SIGN UP MODAL
+          LOGIN / SIGNUP MODAL
       ===================================================== */}
-
       {isLoginCard && (
         <div
           className="
@@ -830,18 +872,36 @@ const Header = () => {
             flex
             items-center
             justify-center
-            bg-slate-950/70
-            px-4
+            overflow-y-auto
+            bg-black/75
+            px-3
+            py-5
             backdrop-blur-sm
+
+            sm:px-4
+            sm:py-8
           "
-          onClick={handleCloseLogin}
+          onClick={() => setIsLoginCard(false)}
         >
           <div
-            className="w-full max-w-md"
-            onClick={(e) => e.stopPropagation()}
+            className="
+              w-full
+              max-w-md
+              max-h-[calc(100vh-32px)]
+              overflow-y-auto
+              rounded-2xl
+              scrollbar-thin
+
+              sm:max-h-[calc(100vh-64px)]
+            "
+            onClick={(event) =>
+              event.stopPropagation()
+            }
           >
             <AuthPage
-              onClose={handleCloseLogin}
+              onClose={() =>
+                setIsLoginCard(false)
+              }
             />
           </div>
         </div>
@@ -851,3 +911,4 @@ const Header = () => {
 };
 
 export default Header;
+

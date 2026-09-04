@@ -26,29 +26,14 @@ const Home = () => {
 
       <HeroSection />
       
+            <PopularCategories />
 
-      {/* =====================================================
-          AD 1
-          Google AdSense → Google Ad
-          No Google AdSense → WhatsApp Promotion
-      ===================================================== */}
-<section className="bg-[#f7f7f3] dark:bg-[#06070a]">
-  <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <AdSlot
-            slot="YOUR_AD_SLOT_ID"
-            className="w-full"
-            label="Advertisement"
-            fallbackTitle="Get latest job updates"
-            fallbackDescription="Join the JoblessJob WhatsApp community and get fresh job opportunities directly."
-            fallbackButton="Join WhatsApp"
-            fallbackUrl="YOUR_WHATSAPP_GROUP_LINK"
-          />
-        </div>
-      </section>
+   
 
       {/* ================= FEATURED JOBS ================= */}
 
       <FeaturedJobs />
+      
 
       {/* =====================================================
           AD 2
@@ -56,7 +41,7 @@ const Home = () => {
           No Google AdSense → LinkedIn Promotion
       ===================================================== */}
 
-<section className="bg-[#f7f7f3] dark:bg-[#06070a]">
+{/* <section className="bg-[#f7f7f3] dark:bg-[#06070a]">
   <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
     <AdSlot
       slot="YOUR_AD_SLOT_ID_2"
@@ -68,11 +53,9 @@ const Home = () => {
       fallbackUrl="YOUR_LINKEDIN_PAGE_LINK"
     />
   </div>
-</section>
+</section> */}
 
       {/* ================= CATEGORIES ================= */}
-
-      <PopularCategories />
 
       {/* ================= WHY JOBLESSJOB ================= */}
 

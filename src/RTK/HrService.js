@@ -4,15 +4,14 @@ export const HrService = createApi({
   reducerPath: "HrService",
 
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://job-hunt-backend-sigma.vercel.app/", // ✅ keep api root clean
+    baseUrl: "https://job-hunt-backend-sigma.vercel.app/",
     credentials: "include",
   }),
 
   tagTypes: ["Jobs", "Applications", "Candidate"],
 
   endpoints: (builder) => ({
-
-    // 🟢 CREATE JOB
+    // CREATE JOB
     createJob: builder.mutation({
       query: (jobData) => ({
         url: "/jobs",
@@ -22,8 +21,8 @@ export const HrService = createApi({
       invalidatesTags: ["Jobs"],
     }),
 
-    // 🟠 UPDATE JOB
-    updateJob: builder.mutation({ 
+    // UPDATE JOB
+    updateJob: builder.mutation({
       query: ({ id, ...updatedData }) => ({
         url: `/jobs/${id}`,
         method: "PUT",
@@ -32,7 +31,7 @@ export const HrService = createApi({
       invalidatesTags: ["Jobs"],
     }),
 
-    // 🔴 DELETE JOB
+    // DELETE JOB
     deleteJob: builder.mutation({
       query: ({ id }) => ({
         url: `/jobs/${id}`,
@@ -41,29 +40,33 @@ export const HrService = createApi({
       invalidatesTags: ["Jobs"],
     }),
 
-    // 🔵 GET HR JOBS
+    // GET HR JOBS
     getAllJobs: builder.query({
       query: () => "/jobs/hr",
       providesTags: ["Jobs"],
     }),
 
-    // 🔵 GET ALL JOBS (PUBLIC)
+    // GET ALL PUBLIC JOBS
     getAllforJobs: builder.query({
-      query: () => "/jobs",
+      query: (params = {}) => ({
+        url: "/jobs",
+        params,
+      }),
       providesTags: ["Jobs"],
     }),
 
-    getJobById:builder.query({
-      query:(jobId)=>`/jobs/${jobId}`
+    // GET JOB BY ID
+    getJobById: builder.query({
+      query: (jobId) => `/jobs/${jobId}`,
     }),
 
-    // 🧾 GET APPLICATIONS FOR JOB
+    // GET APPLICATIONS
     getApplicationsForJob: builder.query({
       query: (id) => `/applications/job/${id}`,
       providesTags: ["Applications"],
     }),
 
-    // 🔁 UPDATE JOB ACTIVE STATUS
+    // UPDATE JOB ACTIVE STATUS
     updateJobActiveStatus: builder.mutation({
       query: (id) => ({
         url: `/jobs/${id}`,
@@ -72,26 +75,24 @@ export const HrService = createApi({
       invalidatesTags: ["Jobs"],
     }),
 
-    // 🔁 UPDATE APPLICATION STATUS
-    updateJobApplyStatus: builder.mutation({ 
+    // UPDATE APPLICATION STATUS
+    updateJobApplyStatus: builder.mutation({
       query: ({ id, status }) => ({
         url: `/applications/${id}/status`,
         method: "PATCH",
-        body: { status }, 
+        body: { status },
       }),
       invalidatesTags: ["Applications"],
     }),
 
-    // 👤 VIEW CANDIDATE DETAIL (HR)
+    // VIEW CANDIDATE
     viewCandidateDetail: builder.query({
       query: (id) => `/users/candidate/${id}`,
+      providesTags: ["Candidate"],
     }),
-
-
   }),
 });
 
-// ✅ EXPORT HOOKS
 export const {
   useCreateJobMutation,
   useUpdateJobMutation,

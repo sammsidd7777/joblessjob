@@ -36,14 +36,7 @@ const JobDetailPage = () => {
     };
 
     const handleApply = (selectedJob) => {
-        /*
-         * Internal job:
-         * JobDetail component can open your ApplyJobForm.
-         *
-         * External job:
-         * JobDetail component handles company website /
-         * WhatsApp directly.
-         */
+       
         console.log("Apply:", selectedJob);
     };
 

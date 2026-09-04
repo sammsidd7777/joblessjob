@@ -138,15 +138,28 @@ const router = createBrowserRouter([
         element: Loadable(Home),
       },
 
-      // Find Jobs
-      {
-        path: "find-job",
-        element: Loadable(FindJob),
-      },
+     {
+  path: "find-job",
+  element: Loadable(FindJob),
+},
+
+{
+  path: "find-job/:searchTerm",
+  element: Loadable(FindJob),
+},
+
+{
+  path: "find-job/:searchTerm/:location",
+  element: Loadable(FindJob),
+},
 
       // Job Details
       {
         path: "jobs/:id",
+        element: Loadable(JobDetailPage),
+      },
+      {
+        path: "jobs/:title/:location/:category/:id",
         element: Loadable(JobDetailPage),
       },
 
@@ -161,6 +174,7 @@ const router = createBrowserRouter([
         path: "company/:id",
         element: Loadable(CompanyDetails),
       },
+
 
       // =================================================
       // LEGAL

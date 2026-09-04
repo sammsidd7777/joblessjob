@@ -13,11 +13,12 @@ import {
     CalendarDays,
     Share2,
     ShieldCheck,
+    Mail,
     X,
+    Phone,
 } from "lucide-react";
 
 import ApplyJobForm from "../../components/forms/hr/ApplyJobForm";
-import AdSlot from "../../components/common/AdSlot";
 import Seo from "../../components/common/Seo";
 
 const JobDetail = ({
@@ -30,6 +31,7 @@ const JobDetail = ({
 }) => {
     const [isApply, setIsApply] = useState(false);
     const [showExternalPopup, setShowExternalPopup] = useState(false);
+    const [selectedApplyMethod, setSelectedApplyMethod] = useState("");
 
     if (!job) return null;
 
@@ -46,7 +48,8 @@ const JobDetail = ({
     const companyLogo =
         job?.companyLogo ||
         job?.company?.companyLogo ||
-        job?.company?.logo;
+        job?.company?.logo ||
+        "";
 
     /* =========================================================
        JOB DATA
@@ -61,26 +64,106 @@ const JobDetail = ({
     const employmentType =
         job?.employmentType || "Full-time";
 
-    const skills =
-        Array.isArray(job?.skills)
-            ? job.skills
-            : [];
+    const skills = Array.isArray(job?.skills)
+        ? job.skills
+        : [];
 
     const description =
         job?.description ||
         "No job description available.";
 
-    const jobType =
-        job?.jobType || "internal";
+    /* =========================================================
+       APPLY DATA
+    ========================================================= */
 
-    const applyMethod =
-        job?.applyMethod || "";
+    const applicationEmail =
+        job?.applicationEmail ||
+        job?.email ||
+        job?.applyEmail ||
+        "";
 
     const externalApplyUrl =
-        job?.externalApplyUrl || "";
+        job?.externalApplyUrl ||
+        job?.applyUrl ||
+        job?.websiteUrl ||
+        job?.applicationUrl ||
+        "";
+
+    /*
+     * MOBILE / WHATSAPP
+     *
+     * Supports multiple possible backend field names.
+     */
 
     const whatsappNumber =
-        job?.whatsappNumber || "";
+        job?.whatsappNumber ||
+        job?.whatsapp ||
+        job?.whatsappPhone ||
+        job?.mobileNumber ||
+        job?.mobile ||
+        job?.phoneNumber ||
+        job?.phone ||
+        job?.contactNumber ||
+        job?.applicationPhone ||
+        job?.recruiterPhone ||
+        job?.hrPhone ||
+        "";
+
+    const whatsappMessage =
+        job?.whatsappMessage ||
+        "";
+
+    /* =========================================================
+       APPLY METHOD
+    ========================================================= */
+
+    const applyMethod = String(
+        job?.applyMethod || ""
+    )
+        .trim()
+        .toLowerCase();
+
+    /* =========================================================
+       AVAILABLE APPLY METHODS
+    ========================================================= */
+
+    const hasEmailApply = Boolean(
+        String(applicationEmail).trim()
+    );
+
+    const hasWhatsAppApply = Boolean(
+        String(whatsappNumber).trim()
+    );
+
+    const hasWebsiteApply = Boolean(
+        String(externalApplyUrl).trim()
+    );
+
+    const hasDirectApply =
+        hasEmailApply ||
+        hasWhatsAppApply ||
+        hasWebsiteApply;
+
+    /*
+     * Internal apply only when there is
+     * absolutely no external application method.
+     */
+
+    const isInternalApply =
+        !hasDirectApply &&
+        (
+            !applyMethod ||
+            applyMethod === "internal"
+        );
+
+    const isEmailApply =
+        selectedApplyMethod === "email";
+
+    const isWhatsAppApply =
+        selectedApplyMethod === "whatsapp";
+
+    const isWebsiteApply =
+        selectedApplyMethod === "website";
 
     /* =========================================================
        SALARY
@@ -98,7 +181,7 @@ const JobDetail = ({
         }
 
         if (typeof salary === "number") {
-            return salary.toLocaleString("en-IN");
+            return `₹${salary.toLocaleString("en-IN")}`;
         }
 
         if (typeof salary === "object") {
@@ -154,96 +237,159 @@ const JobDetail = ({
         : null;
 
     /* =========================================================
-       EXTERNAL JOB CHECK
+       EMAIL APPLICATION
     ========================================================= */
 
-    const isExternalJob =
-        jobType === "external" ||
-        Boolean(externalApplyUrl) ||
-        Boolean(whatsappNumber);
-
-    const isWhatsAppJob =
-        applyMethod === "whatsapp" ||
-        Boolean(whatsappNumber);
-
-    /* =========================================================
-       OPEN EXTERNAL APPLICATION
-    ========================================================= */
-
-    const openExternalApplication = () => {
-        /*
-         * WhatsApp
-         */
-
-        if (
-            isWhatsAppJob &&
-            whatsappNumber
-        ) {
-            const cleanNumber =
-                whatsappNumber.replace(/\D/g, "");
-
-            const message = encodeURIComponent(
-                `Hello, I am interested in applying for the ${title} position at ${companyName}.`
-            );
-
-            window.open(
-                `https://wa.me/${cleanNumber}?text=${message}`,
-                "_blank",
-                "noopener,noreferrer"
-            );
-
-            setShowExternalPopup(false);
-
+    const openEmailApplication = () => {
+        if (!applicationEmail) {
             return;
         }
 
-        /*
-         * External Website
-         */
+        const subject =
+            `Application for ${title}`;
 
-        if (externalApplyUrl) {
-            window.open(
-                externalApplyUrl,
-                "_blank",
-                "noopener,noreferrer"
-            );
+        const body = `Hello,
 
-            setShowExternalPopup(false);
+I am interested in applying for the ${title} position at ${companyName}.
 
-            return;
-        }
+Please find my updated CV/resume attached.
 
-        /*
-         * No external URL
-         */
+Thank you.`;
+
+        const gmailUrl =
+            `https://mail.google.com/mail/?view=cm&fs=1` +
+            `&to=${encodeURIComponent(applicationEmail)}` +
+            `&su=${encodeURIComponent(subject)}` +
+            `&body=${encodeURIComponent(body)}`;
+
+        window.open(
+            gmailUrl,
+            "_blank",
+            "noopener,noreferrer"
+        );
 
         setShowExternalPopup(false);
     };
 
     /* =========================================================
-       APPLY
+       WHATSAPP APPLICATION
     ========================================================= */
 
-    const handleApply = () => {
+    const openWhatsAppApplication = () => {
+        if (!whatsappNumber) {
+            return;
+        }
+
+        let cleanNumber =
+            String(whatsappNumber).replace(/\D/g, "");
+
         /*
-         * External job:
-         * Show confirmation popup FIRST.
+         * Automatically add India country code
+         * for 10 digit numbers.
          */
 
-        if (isExternalJob) {
+        if (cleanNumber.length === 10) {
+            cleanNumber = `91${cleanNumber}`;
+        }
+
+        const message =
+            whatsappMessage ||
+            `Hello, I am interested in applying for the ${title} position at ${companyName}.`;
+
+        const whatsappUrl =
+            `https://wa.me/${cleanNumber}` +
+            `?text=${encodeURIComponent(message)}`;
+
+        window.open(
+            whatsappUrl,
+            "_blank",
+            "noopener,noreferrer"
+        );
+
+        setShowExternalPopup(false);
+    };
+
+    /* =========================================================
+       WEBSITE APPLICATION
+    ========================================================= */
+
+    const openWebsiteApplication = () => {
+        if (!externalApplyUrl) {
+            return;
+        }
+
+        let url =
+            String(externalApplyUrl).trim();
+
+        if (
+            !url.startsWith("http://") &&
+            !url.startsWith("https://")
+        ) {
+            url = `https://${url}`;
+        }
+
+        window.open(
+            url,
+            "_blank",
+            "noopener,noreferrer"
+        );
+
+        setShowExternalPopup(false);
+    };
+
+    /* =========================================================
+       APPLY HANDLER
+    ========================================================= */
+
+    const handleApply = (method = null) => {
+        /*
+         * External method selected
+         */
+
+        if (method) {
+            setSelectedApplyMethod(method);
             setShowExternalPopup(true);
             return;
         }
 
         /*
-         * Internal JoblessJob application
+         * Internal application
          */
 
-        setIsApply(true);
+        if (isInternalApply) {
+            setIsApply(true);
 
-        if (onApply) {
-            onApply(job);
+            if (onApply) {
+                onApply(job);
+            }
+
+            return;
         }
+
+        /*
+         * If only one external method exists,
+         * open its popup directly.
+         */
+
+        if (hasEmailApply && !hasWhatsAppApply && !hasWebsiteApply) {
+            setSelectedApplyMethod("email");
+            setShowExternalPopup(true);
+            return;
+        }
+
+        if (!hasEmailApply && hasWhatsAppApply && !hasWebsiteApply) {
+            setSelectedApplyMethod("whatsapp");
+            setShowExternalPopup(true);
+            return;
+        }
+
+        if (!hasEmailApply && !hasWhatsAppApply && hasWebsiteApply) {
+            setSelectedApplyMethod("website");
+            setShowExternalPopup(true);
+            return;
+        }
+
+        setIsApply(true);
     };
 
     /* =========================================================
@@ -262,17 +408,16 @@ const JobDetail = ({
                 return;
             }
 
-            await navigator.clipboard.writeText(
-                window.location.href
-            );
-        } catch {
-            try {
+            if (navigator.clipboard) {
                 await navigator.clipboard.writeText(
                     window.location.href
                 );
-            } catch {
-                console.log("Unable to share");
             }
+        } catch (error) {
+            console.log(
+                "Unable to share:",
+                error
+            );
         }
     };
 
@@ -287,23 +432,181 @@ const JobDetail = ({
     };
 
     /* =========================================================
+       APPLICATION METHODS ARRAY
+    ========================================================= */
+
+    const applicationMethods = [];
+
+    if (hasEmailApply) {
+        applicationMethods.push({
+            key: "email",
+            label: "Email",
+            icon: Mail,
+            color: "text-blue-500",
+            bg: "bg-blue-500/10",
+        });
+    }
+
+    if (hasWhatsAppApply) {
+        applicationMethods.push({
+            key: "whatsapp",
+            label: "WhatsApp",
+            icon: MessageCircle,
+            color: "text-emerald-500",
+            bg: "bg-emerald-500/10",
+        });
+    }
+
+    if (hasWebsiteApply) {
+        applicationMethods.push({
+            key: "website",
+            label: "Company Website",
+            icon: ExternalLink,
+            color: "text-violet-500",
+            bg: "bg-violet-500/10",
+        });
+    }
+
+    /* =========================================================
+       APPLY METHOD TEXT
+    ========================================================= */
+
+    const getApplyMethodText = () => {
+        if (applicationMethods.length === 0) {
+            return "Apply on JoblessJob";
+        }
+
+        if (applicationMethods.length === 1) {
+            return applicationMethods[0].label;
+        }
+
+        return applicationMethods
+            .map((method) => method.label)
+            .join(" & ");
+    };
+
+    /* =========================================================
+       POPUP DATA
+    ========================================================= */
+
+    const getPopupTitle = () => {
+        if (isEmailApply) {
+            return "Continue to Email?";
+        }
+
+        if (isWhatsAppApply) {
+            return "Continue to WhatsApp?";
+        }
+
+        if (isWebsiteApply) {
+            return "Continue to Company Website?";
+        }
+
+        return "You're leaving JoblessJob";
+    };
+
+    const getPopupDescription = () => {
+        if (isEmailApply) {
+            return "You will be redirected to your email application. The application email will be pre-filled for you.";
+        }
+
+        if (isWhatsAppApply) {
+            return "You will be redirected to WhatsApp to contact the recruiter directly about this job.";
+        }
+
+        if (isWebsiteApply) {
+            return "You will be redirected to the company's application page to complete your application.";
+        }
+
+        return "You will be redirected to complete your application.";
+    };
+
+    const getPopupButtonText = () => {
+        if (isEmailApply) {
+            return "Continue to Email";
+        }
+
+        if (isWhatsAppApply) {
+            return "Continue to WhatsApp";
+        }
+
+        if (isWebsiteApply) {
+            return "Continue to Apply";
+        }
+
+        return "Continue";
+    };
+
+    const handleExternalContinue = () => {
+        if (isEmailApply) {
+            openEmailApplication();
+            return;
+        }
+
+        if (isWhatsAppApply) {
+            openWhatsAppApplication();
+            return;
+        }
+
+        if (isWebsiteApply) {
+            openWebsiteApplication();
+        }
+    };
+
+    /* =========================================================
        APPLY BUTTON
     ========================================================= */
 
     const renderApplyButton = () => {
+        const buttons = [];
+
+
         /*
-         * WhatsApp
+         * EMAIL
          */
 
-        if (
-            isExternalJob &&
-            isWhatsAppJob &&
-            whatsappNumber
-        ) {
-            return (
+        if (hasEmailApply) {
+            buttons.push(
                 <button
+                    key="email"
                     type="button"
-                    onClick={handleApply}
+                    onClick={() =>
+                        handleApply("email")
+                    }
+                    className="
+                        flex w-full items-center
+                        justify-center gap-2
+                        rounded-2xl
+                        bg-blue-600
+                        px-5 py-4
+                        text-sm font-bold
+                        text-white
+                        transition-all
+                        duration-200
+                        hover:-translate-y-0.5
+                        hover:bg-blue-700
+                        hover:shadow-xl
+                        active:translate-y-0
+                    "
+                >
+                    <Mail size={18} />
+                    Apply via Email
+                </button>
+            );
+        }
+
+        /*
+         * WHATSAPP / MOBILE
+         */
+
+        if (hasWhatsAppApply) {
+            buttons.push(
+                <button
+                    key="whatsapp"
+                    type="button"
+                    onClick={() =>
+                        handleApply("whatsapp")
+                    }
                     className="
                         flex w-full items-center
                         justify-center gap-2
@@ -320,24 +623,24 @@ const JobDetail = ({
                         active:translate-y-0
                     "
                 >
-                    Apply via WhatsApp
                     <MessageCircle size={18} />
+                    Apply via WhatsApp
                 </button>
             );
         }
 
         /*
-         * External Website
+         * WEBSITE
          */
 
-        if (
-            isExternalJob &&
-            externalApplyUrl
-        ) {
-            return (
+        if (hasWebsiteApply) {
+            buttons.push(
                 <button
+                    key="website"
                     type="button"
-                    onClick={handleApply}
+                    onClick={() =>
+                        handleApply("website")
+                    }
                     className="
                         flex w-full items-center
                         justify-center gap-2
@@ -357,39 +660,49 @@ const JobDetail = ({
                         dark:hover:bg-slate-100
                     "
                 >
-                    Apply Directly
                     <ExternalLink size={17} />
+                    Apply Directly
                 </button>
             );
         }
 
         /*
-         * Internal JoblessJob
+         * INTERNAL
          */
 
+        if (buttons.length === 0) {
+            return (
+                <button
+                    type="button"
+                    onClick={() => handleApply()}
+                    className="
+                        flex w-full items-center
+                        justify-center gap-2
+                        rounded-2xl
+                        bg-blue-600
+                        px-5 py-4
+                        text-sm font-bold
+                        text-white
+                        transition-all
+                        duration-200
+                        hover:-translate-y-0.5
+                        hover:bg-blue-700
+                        hover:shadow-xl
+                    "
+                >
+                    Apply Now
+                    <ArrowUpRight size={17} />
+                </button>
+            );
+        }
+
+        console.log(buttons)
+
+
         return (
-            <button
-                type="button"
-                onClick={handleApply}
-                className="
-                    flex w-full items-center
-                    justify-center gap-2
-                    rounded-2xl
-                    bg-blue-600
-                    px-5 py-4
-                    text-sm font-bold
-                    text-white
-                    transition-all
-                    duration-200
-                    hover:-translate-y-0.5
-                    hover:bg-blue-700
-                    hover:shadow-xl
-                    active:translate-y-0
-                "
-            >
-                Apply Now
-                <ArrowUpRight size={17} />
-            </button>
+            <div className="flex w-full flex-col gap-3">
+                {buttons}
+            </div>
         );
     };
 
@@ -429,6 +742,7 @@ const JobDetail = ({
                     type="button"
                     onClick={onBack}
                     className="
+                        mt-20
                         inline-flex
                         items-center
                         gap-2
@@ -450,7 +764,7 @@ const JobDetail = ({
             </div>
 
             {/* =================================================
-                TOP AD
+                WHATSAPP GROUP
             ================================================= */}
 
             <div
@@ -459,10 +773,101 @@ const JobDetail = ({
                     px-4 sm:px-6 lg:px-8
                 "
             >
-                <AdSlot
-                    slot="JOB_DETAIL_TOP_AD_SLOT"
-                    className="my-6 min-h-[120px]"
-                />
+                <div
+                    className="
+                        my-6
+                        overflow-hidden
+                        rounded-2xl
+                        border
+                        border-emerald-200
+                        bg-emerald-50
+                        px-5 py-4
+                        dark:border-emerald-900/40
+                        dark:bg-emerald-950/20
+                    "
+                >
+                    <div
+                        className="
+                            flex flex-col
+                            gap-4
+                            sm:flex-row
+                            sm:items-center
+                            sm:justify-between
+                        "
+                    >
+                        <div className="flex items-start gap-3">
+                            <div
+                                className="
+                                    flex h-11 w-11
+                                    shrink-0
+                                    items-center
+                                    justify-center
+                                    rounded-xl
+                                    bg-emerald-600
+                                    text-white
+                                "
+                            >
+                                <MessageCircle size={22} />
+                            </div>
+
+                            <div>
+                                <h2
+                                    className="
+                                        text-sm
+                                        font-bold
+                                        text-slate-900
+                                        dark:text-white
+                                    "
+                                >
+                                    Get Job Updates on WhatsApp
+                                </h2>
+
+                                <p
+                                    className="
+                                        mt-1
+                                        text-xs
+                                        leading-5
+                                        text-slate-600
+                                        dark:text-slate-400
+                                    "
+                                >
+                                    Join our WhatsApp group to get
+                                    the latest job openings and
+                                    hiring updates directly.
+                                </p>
+                            </div>
+                        </div>
+
+                        <a
+                            href="https://chat.whatsapp.com/CXcT25i881eB8ogzk8P7GE"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="
+                                inline-flex
+                                shrink-0
+                                items-center
+                                justify-center
+                                gap-2
+                                rounded-xl
+                                bg-emerald-600
+                                px-5 py-3
+                                text-sm
+                                font-bold
+                                text-white
+                                transition-all
+                                duration-200
+                                hover:-translate-y-0.5
+                                hover:bg-emerald-700
+                                hover:shadow-lg
+                                active:translate-y-0
+                            "
+                        >
+                            <MessageCircle size={17} />
+                            Join WhatsApp Group
+                            <ArrowUpRight size={16} />
+                        </a>
+                    </div>
+                </div>
             </div>
 
             {/* =================================================
@@ -489,9 +894,7 @@ const JobDetail = ({
 
                     <div className="space-y-6">
 
-                        {/* =================================================
-                            JOB HEADER
-                        ================================================= */}
+                        {/* JOB HEADER */}
 
                         <div
                             className="
@@ -513,7 +916,7 @@ const JobDetail = ({
                                     sm:items-start
                                 "
                             >
-                                {/* COMPANY LOGO */}
+                                {/* LOGO */}
 
                                 <div
                                     className="
@@ -543,9 +946,7 @@ const JobDetail = ({
                                     ) : (
                                         <Building2
                                             size={32}
-                                            className="
-                                                text-slate-400
-                                            "
+                                            className="text-slate-400"
                                         />
                                     )}
                                 </div>
@@ -582,7 +983,7 @@ const JobDetail = ({
                                             {employmentType}
                                         </span>
 
-                                        {isExternalJob && (
+                                        {hasDirectApply && (
                                             <span
                                                 className="
                                                     inline-flex
@@ -671,7 +1072,7 @@ const JobDetail = ({
                                 </div>
                             </div>
 
-                            {/* ACTION BUTTONS */}
+                            {/* ACTIONS */}
 
                             <div
                                 className="
@@ -750,14 +1151,12 @@ const JobDetail = ({
                                     "
                                 >
                                     <Share2 size={18} />
-                                    Share
+                                    
                                 </button>
                             </div>
                         </div>
 
-                        {/* =================================================
-                            DESCRIPTION
-                        ================================================= */}
+                        {/* DESCRIPTION */}
 
                         <div
                             className="
@@ -790,9 +1189,7 @@ const JobDetail = ({
                             </div>
                         </div>
 
-                        {/* =================================================
-                            SKILLS
-                        ================================================= */}
+                        {/* SKILLS */}
 
                         {skills.length > 0 && (
                             <div
@@ -843,15 +1240,6 @@ const JobDetail = ({
                                 </div>
                             </div>
                         )}
-
-                        {/* =================================================
-                            CONTENT AD
-                        ================================================= */}
-
-                        <AdSlot
-                            slot="JOB_DETAIL_CONTENT_AD_SLOT"
-                            className="min-h-[180px]"
-                        />
                     </div>
 
                     {/* =================================================
@@ -896,6 +1284,8 @@ const JobDetail = ({
                                 {renderApplyButton()}
                             </div>
 
+                            {/* APPLICATION METHODS */}
+
                             <div
                                 className="
                                     mt-5
@@ -905,43 +1295,88 @@ const JobDetail = ({
                                     dark:border-slate-800
                                 "
                             >
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-start gap-3">
                                     <ShieldCheck
                                         size={20}
                                         className="
+                                            mt-0.5
+                                            shrink-0
                                             text-emerald-500
                                         "
                                     />
 
-                                    <div>
-                                        <p className="
-                                            text-sm
-                                            font-semibold
-                                        ">
-                                            JoblessJob
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-semibold">
+                                            Application Methods
                                         </p>
 
-                                        <p className="
-                                            text-xs
-                                            text-slate-500
-                                        ">
-                                            Job listing platform
-                                        </p>
+                                        {applicationMethods.length > 0 ? (
+                                            <div className="mt-3 space-y-2">
+                                                {applicationMethods.map(
+                                                    (method) => {
+                                                        const Icon =
+                                                            method.icon;
+
+                                                        return (
+                                                            <div
+                                                                key={method.key}
+                                                                className="
+                                                                    flex
+                                                                    items-center
+                                                                    gap-2
+                                                                    rounded-xl
+                                                                    px-2 py-1.5
+                                                                "
+                                                            >
+                                                                <span
+                                                                    className={`
+                                                                        flex
+                                                                        h-7
+                                                                        w-7
+                                                                        items-center
+                                                                        justify-center
+                                                                        rounded-lg
+                                                                        ${method.bg}
+                                                                        ${method.color}
+                                                                    `}
+                                                                >
+                                                                    <Icon
+                                                                        size={15}
+                                                                    />
+                                                                </span>
+
+                                                                <span
+                                                                    className="
+                                                                        text-sm
+                                                                        font-medium
+                                                                        text-slate-700
+                                                                        dark:text-slate-300
+                                                                    "
+                                                                >
+                                                                    {method.label}
+                                                                </span>
+                                                            </div>
+                                                        );
+                                                    }
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <p
+                                                className="
+                                                    mt-2
+                                                    text-sm
+                                                    text-slate-500
+                                                "
+                                            >
+                                                Apply on JoblessJob
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* SIDEBAR AD */}
-
-                        <AdSlot
-                            slot="JOB_DETAIL_SIDEBAR_AD_SLOT"
-                            className="min-h-[280px]"
-                        />
-
-                        {/* =================================================
-                            JOB OVERVIEW
-                        ================================================= */}
+                        {/* JOB OVERVIEW */}
 
                         <div
                             className="
@@ -966,25 +1401,15 @@ const JobDetail = ({
                                 <div className="flex gap-3">
                                     <BriefcaseBusiness
                                         size={19}
-                                        className="
-                                            mt-0.5
-                                            text-blue-600
-                                        "
+                                        className="mt-0.5 text-blue-600"
                                     />
 
                                     <div>
-                                        <p className="
-                                            text-xs
-                                            text-slate-400
-                                        ">
+                                        <p className="text-xs text-slate-400">
                                             Employment
                                         </p>
 
-                                        <p className="
-                                            mt-1
-                                            text-sm
-                                            font-semibold
-                                        ">
+                                        <p className="mt-1 text-sm font-semibold">
                                             {employmentType}
                                         </p>
                                     </div>
@@ -995,25 +1420,15 @@ const JobDetail = ({
                                 <div className="flex gap-3">
                                     <MapPin
                                         size={19}
-                                        className="
-                                            mt-0.5
-                                            text-blue-600
-                                        "
+                                        className="mt-0.5 text-blue-600"
                                     />
 
                                     <div>
-                                        <p className="
-                                            text-xs
-                                            text-slate-400
-                                        ">
+                                        <p className="text-xs text-slate-400">
                                             Location
                                         </p>
 
-                                        <p className="
-                                            mt-1
-                                            text-sm
-                                            font-semibold
-                                        ">
+                                        <p className="mt-1 text-sm font-semibold">
                                             {location}
                                         </p>
                                     </div>
@@ -1041,18 +1456,11 @@ const JobDetail = ({
                                     </span>
 
                                     <div>
-                                        <p className="
-                                            text-xs
-                                            text-slate-400
-                                        ">
+                                        <p className="text-xs text-slate-400">
                                             Salary
                                         </p>
 
-                                        <p className="
-                                            mt-1
-                                            text-sm
-                                            font-semibold
-                                        ">
+                                        <p className="mt-1 text-sm font-semibold">
                                             {salaryText}
                                         </p>
                                     </div>
@@ -1064,30 +1472,42 @@ const JobDetail = ({
                                     <div className="flex gap-3">
                                         <Clock3
                                             size={19}
-                                            className="
-                                                mt-0.5
-                                                text-blue-600
-                                            "
+                                            className="mt-0.5 text-blue-600"
                                         />
 
                                         <div>
-                                            <p className="
-                                                text-xs
-                                                text-slate-400
-                                            ">
+                                            <p className="text-xs text-slate-400">
                                                 Posted
                                             </p>
 
-                                            <p className="
-                                                mt-1
-                                                text-sm
-                                                font-semibold
-                                            ">
+                                            <p className="mt-1 text-sm font-semibold">
                                                 {postedDate}
                                             </p>
                                         </div>
                                     </div>
                                 )}
+
+                                {/* APPLICATION */}
+
+                                <div className="flex gap-3">
+                                    <ShieldCheck
+                                        size={19}
+                                        className="
+                                            mt-0.5
+                                            text-emerald-600
+                                        "
+                                    />
+
+                                    <div>
+                                        <p className="text-xs text-slate-400">
+                                            Application
+                                        </p>
+
+                                        <p className="mt-1 text-sm font-semibold">
+                                            {getApplyMethodText()}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </aside>
@@ -1095,7 +1515,7 @@ const JobDetail = ({
             </section>
 
             {/* =========================================================
-                EXTERNAL APPLICATION POPUP
+                EXTERNAL APPLY POPUP
             ========================================================= */}
 
             {showExternalPopup && (
@@ -1131,9 +1551,10 @@ const JobDetail = ({
 
                         <button
                             type="button"
-                            onClick={() =>
-                                setShowExternalPopup(false)
-                            }
+                            onClick={() => {
+                                setShowExternalPopup(false);
+                                setSelectedApplyMethod("");
+                            }}
                             aria-label="Close popup"
                             className="
                                 absolute
@@ -1162,13 +1583,17 @@ const JobDetail = ({
                                 justify-center
                                 rounded-2xl
                                 ${
-                                    isWhatsAppJob
+                                    isEmailApply
+                                        ? "bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400"
+                                        : isWhatsAppApply
                                         ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400"
-                                        : "bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400"
+                                        : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
                                 }
                             `}
                         >
-                            {isWhatsAppJob ? (
+                            {isEmailApply ? (
+                                <Mail size={23} />
+                            ) : isWhatsAppApply ? (
                                 <MessageCircle size={23} />
                             ) : (
                                 <ExternalLink size={23} />
@@ -1188,9 +1613,7 @@ const JobDetail = ({
                                 dark:text-white
                             "
                         >
-                            {isWhatsAppJob
-                                ? "Continue to WhatsApp?"
-                                : "You're leaving JoblessJob"}
+                            {getPopupTitle()}
                         </h2>
 
                         {/* DESCRIPTION */}
@@ -1204,9 +1627,7 @@ const JobDetail = ({
                                 dark:text-slate-300
                             "
                         >
-                            {isWhatsAppJob
-                                ? "This job is listed on JoblessJob, but you will be redirected to WhatsApp to contact the recruiter directly."
-                                : "This job is listed on JoblessJob, but you will be redirected to another website to complete your application."}
+                            {getPopupDescription()}
                         </p>
 
                         {/* JOB INFO */}
@@ -1246,6 +1667,167 @@ const JobDetail = ({
                             </p>
                         </div>
 
+                        {/* EMAIL INFO */}
+
+                        {isEmailApply && (
+                            <div
+                                className="
+                                    mt-4
+                                    rounded-2xl
+                                    border
+                                    border-blue-200
+                                    bg-blue-50
+                                    p-4
+                                    dark:border-blue-900/40
+                                    dark:bg-blue-950/20
+                                "
+                            >
+                                <div className="flex gap-3">
+                                    <Mail
+                                        size={18}
+                                        className="
+                                            mt-0.5
+                                            shrink-0
+                                            text-blue-600
+                                            dark:text-blue-400
+                                        "
+                                    />
+
+                                    <div>
+                                        <p
+                                            className="
+                                                text-xs
+                                                font-semibold
+                                                text-blue-900
+                                                dark:text-blue-300
+                                            "
+                                        >
+                                            Application Email
+                                        </p>
+
+                                        <p
+                                            className="
+                                                mt-1
+                                                break-all
+                                                text-sm
+                                                text-blue-700
+                                                dark:text-blue-400
+                                            "
+                                        >
+                                            {applicationEmail}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* WHATSAPP INFO */}
+
+                        {isWhatsAppApply && (
+                            <div
+                                className="
+                                    mt-4
+                                    rounded-2xl
+                                    border
+                                    border-emerald-200
+                                    bg-emerald-50
+                                    p-4
+                                    dark:border-emerald-900/40
+                                    dark:bg-emerald-950/20
+                                "
+                            >
+                                <div className="flex gap-3">
+                                    <MessageCircle
+                                        size={18}
+                                        className="
+                                            mt-0.5
+                                            shrink-0
+                                            text-emerald-600
+                                            dark:text-emerald-400
+                                        "
+                                    />
+
+                                    <div>
+                                        <p
+                                            className="
+                                                text-xs
+                                                font-semibold
+                                                text-emerald-900
+                                                dark:text-emerald-300
+                                            "
+                                        >
+                                            Recruiter WhatsApp
+                                        </p>
+
+                                        <p
+                                            className="
+                                                mt-1
+                                                text-sm
+                                                text-emerald-700
+                                                dark:text-emerald-400
+                                            "
+                                        >
+                                            {whatsappNumber}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* WEBSITE INFO */}
+
+                        {isWebsiteApply && (
+                            <div
+                                className="
+                                    mt-4
+                                    rounded-2xl
+                                    border
+                                    border-violet-200
+                                    bg-violet-50
+                                    p-4
+                                    dark:border-violet-900/40
+                                    dark:bg-violet-950/20
+                                "
+                            >
+                                <div className="flex gap-3">
+                                    <ExternalLink
+                                        size={18}
+                                        className="
+                                            mt-0.5
+                                            shrink-0
+                                            text-violet-600
+                                            dark:text-violet-400
+                                        "
+                                    />
+
+                                    <div>
+                                        <p
+                                            className="
+                                                text-xs
+                                                font-semibold
+                                                text-violet-900
+                                                dark:text-violet-300
+                                            "
+                                        >
+                                            Application Website
+                                        </p>
+
+                                        <p
+                                            className="
+                                                mt-1
+                                                break-all
+                                                text-sm
+                                                text-violet-700
+                                                dark:text-violet-400
+                                            "
+                                        >
+                                            {externalApplyUrl}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* SAFETY NOTICE */}
 
                         <div
@@ -1281,9 +1863,9 @@ const JobDetail = ({
                             >
                                 JoblessJob does not process your
                                 application on the external
-                                platform. Please verify the job
-                                and employer details before
-                                sharing your information.
+                                platform. Please verify the
+                                employer details before sharing
+                                your information.
                             </p>
                         </div>
 
@@ -1300,9 +1882,10 @@ const JobDetail = ({
                         >
                             <button
                                 type="button"
-                                onClick={() =>
-                                    setShowExternalPopup(false)
-                                }
+                                onClick={() => {
+                                    setShowExternalPopup(false);
+                                    setSelectedApplyMethod("");
+                                }}
                                 className="
                                     flex-1
                                     rounded-2xl
@@ -1326,7 +1909,9 @@ const JobDetail = ({
 
                             <button
                                 type="button"
-                                onClick={openExternalApplication}
+                                onClick={
+                                    handleExternalContinue
+                                }
                                 className={`
                                     flex-1
                                     inline-flex
@@ -1342,17 +1927,25 @@ const JobDetail = ({
                                     hover:-translate-y-0.5
                                     hover:shadow-lg
                                     ${
-                                        isWhatsAppJob
+                                        isWhatsAppApply
                                             ? "bg-emerald-600 hover:bg-emerald-700"
                                             : "bg-blue-600 hover:bg-blue-700"
                                     }
                                 `}
                             >
-                                {isWhatsAppJob
-                                    ? "Continue to WhatsApp"
-                                    : "Continue to Apply"}
+                                {isEmailApply && (
+                                    <Mail size={17} />
+                                )}
 
-                                <ArrowUpRight size={17} />
+                                {isWhatsAppApply && (
+                                    <MessageCircle size={17} />
+                                )}
+
+                                {isWebsiteApply && (
+                                    <ExternalLink size={17} />
+                                )}
+
+                                {getPopupButtonText()}
                             </button>
                         </div>
                     </div>
@@ -1363,17 +1956,19 @@ const JobDetail = ({
                 INTERNAL APPLICATION MODAL
             ========================================================= */}
 
-            {isApply && (
+            {isApply && isInternalApply && (
                 <div
                     className="
                         fixed inset-0
-                        z-[999]
+                        z-[9999]
                         flex items-center
                         justify-center
                         bg-black/60
                         px-4
                         backdrop-blur-sm
                     "
+                    role="dialog"
+                    aria-modal="true"
                 >
                     <div
                         className="
@@ -1388,8 +1983,6 @@ const JobDetail = ({
                             dark:bg-slate-900
                         "
                     >
-                        {/* CLOSE */}
-
                         <button
                             type="button"
                             onClick={() =>

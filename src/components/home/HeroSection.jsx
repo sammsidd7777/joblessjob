@@ -5,8 +5,6 @@ import { useNavigate } from "react-router-dom";
 const locations = [
   "Delhi, India",
   "Mumbai, India",
-  "Bangalore, India",
-  "Pune, India",
   "Remote",
 ];
 
@@ -137,9 +135,7 @@ const HeroSection = () => {
       className="
         relative
         isolate
-        min-h-[calc(90vh-72px)]
-        max-h-[calc(100vh-72px)]
-
+        min-h-[100svh]
         overflow-hidden
         bg-[#f7f7f3]
         text-slate-950
@@ -216,12 +212,44 @@ const HeroSection = () => {
 
         {/* Floating dots */}
 
-        <span className="absolute left-[8%] top-[28%] h-2 w-2 rounded-full bg-violet-500 animate-pulse" />
+        <span
+          className="
+            absolute
+            left-[8%]
+            top-[28%]
+            h-2
+            w-2
+            animate-pulse
+            rounded-full
+            bg-violet-500
+          "
+        />
 
-        <span className="absolute right-[9%] top-[36%] h-2 w-2 rounded-full bg-cyan-400 animate-ping" />
+        <span
+          className="
+            absolute
+            right-[9%]
+            top-[36%]
+            h-2
+            w-2
+            animate-ping
+            rounded-full
+            bg-cyan-400
+          "
+        />
 
-        <span className="absolute bottom-[20%] left-[18%] h-1.5 w-1.5 rounded-full bg-lime-400 animate-pulse" />
-
+        <span
+          className="
+            absolute
+            bottom-[20%]
+            left-[18%]
+            h-1.5
+            w-1.5
+            animate-pulse
+            rounded-full
+            bg-lime-400
+          "
+        />
       </div>
 
       {/* ==========================================================
@@ -233,25 +261,21 @@ const HeroSection = () => {
           relative
           mx-auto
           flex
-          min-h-[calc(100vh-72px)]
+          min-h-[100svh]
           max-w-7xl
           flex-col
           items-center
           px-4
-          pb-16
-          pt-16
+          pb-8
+          pt-10
           sm:px-6
-          sm:pt-20
+          sm:pb-10
+          sm:pt-14
           lg:px-8
-          lg:pt-24
+          lg:pb-12
+          lg:pt-16
         "
       >
-
-        {/* ========================================================
-            BRAND LABEL
-        ========================================================= */}
-
-    
 
         {/* ========================================================
             STATUS
@@ -260,6 +284,7 @@ const HeroSection = () => {
         <div
           className="
             mb-8
+            mt-8
             flex
             items-center
             gap-2
@@ -268,19 +293,50 @@ const HeroSection = () => {
             border-slate-900/10
             bg-white/60
             px-3
-            py-1.5
+            py-3.5
             backdrop-blur
             dark:border-white/10
             dark:bg-white/[0.04]
+
+            sm:mt-10
+            lg:mt-12
           "
         >
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+            <span
+              className="
+                absolute
+                inline-flex
+                h-full
+                w-full
+                animate-ping
+                rounded-full
+                bg-green-400
+                opacity-75
+              "
+            />
 
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-green-400" />
+            <span
+              className="
+                relative
+                inline-flex
+                h-2
+                w-2
+                rounded-full
+                bg-green-400
+              "
+            />
           </span>
 
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+          <span
+            className="
+              text-[9px]
+              font-black
+              uppercase
+              tracking-[0.2em]
+              text-slate-400
+            "
+          >
             Status: Looking
           </span>
         </div>
@@ -293,16 +349,15 @@ const HeroSection = () => {
           className="
             relative
             flex
-            min-h-[260px]
+            min-h-[230px]
             w-full
             items-center
             justify-center
             text-center
-            sm:min-h-[300px]
-            lg:min-h-[340px]
+            sm:min-h-[280px]
+            lg:min-h-[320px]
           "
         >
-
           <div
             key={messageIndex}
             className={`
@@ -323,6 +378,7 @@ const HeroSection = () => {
                 <span>{text}</span>
 
                 {/* YES highlight */}
+
                 {text.includes("saying") && (
                   <span
                     className="
@@ -353,9 +409,9 @@ const HeroSection = () => {
                 {current.emoji && (
                   <span
                     className="
+                      hero-emoji
                       ml-2
                       inline-block
-                      hero-emoji
                     "
                   >
                     {current.emoji}
@@ -374,8 +430,8 @@ const HeroSection = () => {
                   h-[0.85em]
                   w-[3px]
                   translate-y-[0.05em]
-                  bg-cyan-400
                   animate-pulse
+                  bg-cyan-400
                 "
               />
             )}
@@ -399,9 +455,24 @@ const HeroSection = () => {
             }
           `}
         >
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 sm:text-base">
+          <p
+            className="
+              text-sm
+              font-medium
+              text-slate-500
+              dark:text-slate-400
+              sm:text-base
+            "
+          >
             Less scrolling. More applying. More chances to say
-            <span className="mx-1 font-black text-violet-500">
+
+            <span
+              className="
+                mx-1
+                font-black
+                text-violet-500
+              "
+            >
               YES.
             </span>
           </p>
@@ -415,11 +486,13 @@ const HeroSection = () => {
           className={`
             relative
             z-30
-            mt-10
+            mt-7
             w-full
             max-w-5xl
             transition-all
             duration-1000
+            sm:mt-9
+            lg:mt-10
             ${
               phase === "finished"
                 ? "translate-y-0 opacity-100"
@@ -741,37 +814,136 @@ const HeroSection = () => {
         ========================================================= */}
 
         <div
-          className={`
-            mt-5
-            flex
-            flex-wrap
-            items-center
-            justify-center
-            gap-x-5
-            gap-y-2
-            text-[9px]
-            font-black
-            uppercase
-            tracking-[0.16em]
-            text-slate-400
-            transition-all
-            duration-1000
-            ${
-              phase === "finished"
-                ? "opacity-100"
-                : "opacity-0"
-            }
-          `}
+          className="
+            relative
+            mt-auto
+            w-full
+            overflow-hidden
+            border-t
+            border-white/[0.06]
+            pt-5
+            sm:pt-6
+          "
         >
-          <span>IT Focused</span>
+          <div
+            className="
+              pointer-events-none
+              absolute
+              inset-y-0
+              left-0
+              z-10
+              w-16
+              bg-gradient-to-r
+              from-[#080806]
+              to-transparent
+            "
+          />
 
-          <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
+          <div
+            className="
+              pointer-events-none
+              absolute
+              inset-y-0
+              right-0
+              z-10
+              w-16
+              bg-gradient-to-l
+              from-[#080806]
+              to-transparent
+            "
+          />
 
-          <span>Freshers Welcome</span>
+          <div
+            className="
+              flex
+              w-max
+              animate-[marquee_22s_linear_infinite]
+            "
+          >
+            {[
+              "IT & Software",
+              "BPO & Calling",
+              "Sales",
+              "Customer Support",
+              "Freshers",
+              "Remote",
+              "Marketing",
+              "Data Entry",
+              "Finance",
+              "Operations",
+            ].map((item, index) => (
+              <div
+                key={index}
+                className="
+                  flex
+                  items-center
+                  whitespace-nowrap
+                "
+              >
+                <span
+                  className="
+                    px-4
+                    text-[10px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.16em]
+                    text-white/30
+                    sm:px-6
+                    sm:text-xs
+                  "
+                >
+                  {item}
+                </span>
 
-          <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
+                <span className="text-[#D4AF37]/60">
+                  ✦
+                </span>
+              </div>
+            ))}
 
-          <span>Built for Job Seekers</span>
+            {/* Duplicate for seamless loop */}
+
+            {[
+              "IT & Software",
+              "BPO & Calling",
+              "Sales",
+              "Customer Support",
+              "Freshers",
+              "Remote",
+              "Marketing",
+              "Data Entry",
+              "Finance",
+              "Operations",
+            ].map((item, index) => (
+              <div
+                key={`duplicate-${index}`}
+                className="
+                  flex
+                  items-center
+                  whitespace-nowrap
+                "
+              >
+                <span
+                  className="
+                    px-4
+                    text-[10px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.16em]
+                    text-white/30
+                    sm:px-6
+                    sm:text-xs
+                  "
+                >
+                  {item}
+                </span>
+
+                <span className="text-[#D4AF37]/60">
+                  ✦
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -860,6 +1032,16 @@ const HeroSection = () => {
           }
         }
 
+        @keyframes marquee {
+          from {
+            transform: translateX(0);
+          }
+
+          to {
+            transform: translateX(-50%);
+          }
+        }
+
         .hero-enter {
           opacity: 0;
           animation: fadeUp 0.7s ease-out forwards;
@@ -905,6 +1087,10 @@ const HeroSection = () => {
             animation-duration: 0.01ms !important;
             animation-iteration-count: 1 !important;
           }
+
+          .animate-\\[marquee_22s_linear_infinite\\] {
+            animation: none;
+          }
         }
       `}</style>
     </section>
@@ -912,3 +1098,4 @@ const HeroSection = () => {
 };
 
 export default HeroSection;
+

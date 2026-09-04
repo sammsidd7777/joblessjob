@@ -34,7 +34,7 @@ const JobCard = ({
   // =====================================================
 
   const companyName = isExternal
-    ? job?.companyName || "Company"
+    ? job?.company?.companyName || "Company"
     : job?.company?.companyName ||
       job?.companyName ||
       "Company";
@@ -205,6 +205,58 @@ const JobCard = ({
       );
     }
 
+      // email
+   if (
+  job?.applyMethod === "email" &&
+  job?.applicationEmail
+) {
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        window.location.href = `mailto:${job.applicationEmail}`;
+      }}
+      className="
+        group/apply
+        inline-flex
+        items-center
+        justify-center
+        gap-2
+        rounded-xl
+        bg-white
+        px-4
+        py-2.5
+        text-xs
+        font-bold
+        text-[#080a0f]
+        transition-all
+        duration-300
+        hover:-translate-y-0.5
+        hover:bg-slate-100
+        hover:shadow-[0_10px_30px_rgba(255,255,255,0.08)]
+        focus:outline-none
+        focus-visible:ring-2
+        focus-visible:ring-white
+        focus-visible:ring-offset-2
+        focus-visible:ring-offset-[#090b10]
+      "
+    >
+      Apply via Email
+
+      <ArrowUpRight
+        size={14}
+        strokeWidth={2.4}
+        className="
+          transition-transform
+          duration-300
+          group-hover/apply:translate-x-0.5
+          group-hover/apply:-translate-y-0.5
+        "
+      />
+    </button>
+  );
+}
+
     // EXTERNAL FALLBACK
     if (
       isExternal &&
@@ -304,6 +356,8 @@ const JobCard = ({
         </button>
       );
     }
+
+    
 
     // UNAVAILABLE
     return (
@@ -643,7 +697,7 @@ const JobCard = ({
             text-slate-200
           "
         >
-          {companyName}
+          {companyName}sidd
         </span>
 
         <span className="text-slate-600">

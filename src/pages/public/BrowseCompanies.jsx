@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Search, Building2, Sparkles, ArrowUpRight } from "lucide-react";
+import {
+  Search,
+  Building2,
+  ArrowRight,
+  X,
+  Sparkles,
+} from "lucide-react";
+
 import { useGetAllcompanyQuery } from "../../RTK/CompanyService";
 import Seo from "../../components/common/Seo";
 
@@ -24,14 +31,18 @@ const BrowseCompanies = () => {
       : staticCompanies;
 
   const filteredCompanies = companies.filter((company) => {
-    const companyName = company.companyName || company.name || "";
+    const companyName =
+      company.companyName || company.name || "";
 
     return companyName
       .toLowerCase()
       .includes(search.toLowerCase());
   });
 
-  // Cursor blink
+  /* =========================
+     CURSOR
+  ========================= */
+
   useEffect(() => {
     const interval = setInterval(() => {
       setShowCursor((prev) => !prev);
@@ -41,9 +52,10 @@ const BrowseCompanies = () => {
   }, []);
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <main className="min-h-screen bg-[#0A0A0C] text-[#F5F2EA]">
+
       <Seo
-        title="Browse companies"
+        title="Browse Companies"
         description="Explore companies hiring right now. Discover open roles, company profiles, and industries."
         path="/companies"
       />
@@ -52,8 +64,9 @@ const BrowseCompanies = () => {
           HERO
       ====================================================== */}
 
-      <section className="relative overflow-hidden">
-        {/* Background */}
+      <section className="relative overflow-hidden border-b border-white/[0.07]">
+
+        {/* BACKGROUND */}
 
         <div
           aria-hidden="true"
@@ -69,7 +82,7 @@ const BrowseCompanies = () => {
               h-[420px]
               w-[420px]
               rounded-full
-              bg-blue-500/[0.10]
+              bg-blue-600/[0.08]
               blur-[120px]
             "
           />
@@ -80,11 +93,11 @@ const BrowseCompanies = () => {
             className="
               absolute
               -right-40
-              top-20
+              top-10
               h-[420px]
               w-[420px]
               rounded-full
-              bg-purple-500/[0.09]
+              bg-purple-600/[0.07]
               blur-[120px]
             "
           />
@@ -96,204 +109,225 @@ const BrowseCompanies = () => {
               absolute
               bottom-[-180px]
               left-1/2
-              h-[350px]
-              w-[600px]
+              h-[360px]
+              w-[650px]
               -translate-x-1/2
               rounded-full
-              bg-indigo-500/[0.06]
+              bg-indigo-600/[0.05]
               blur-[120px]
             "
           />
 
-          {/* Grid */}
+          {/* GRID */}
 
           <div
             className="
               absolute
               inset-0
-              opacity-[0.025]
-              [background-image:linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)]
-              [background-size:55px_55px]
-              dark:opacity-[0.035]
-              dark:[background-image:linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)]
+              opacity-[0.035]
+              [background-image:linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)]
+              [background-size:56px_56px]
             "
           />
         </div>
 
-        <div
-          className="
-            relative
-            mx-auto
-            max-w-7xl
-            px-4
-            pb-16
-            pt-16
-            sm:px-6
-            sm:pb-20
-            lg:px-8
-            lg:pt-20
-          "
-        >
-          {/* =================================================
-              HERO CONTENT
-          ================================================== */}
+        {/* HERO CONTAINER */}
+
+       <div
+  className="
+    relative
+    mx-auto
+    max-w-[1200px]
+    px-5
+    pb-14
+    pt-6
+    sm:px-8
+    sm:pb-16
+    sm:pt-8
+    lg:px-8
+    lg:pb-20
+    lg:pt-10
+  "
+>
+
+         {/* STATUS */}
+<div
+  className="
+    hero-fade-in
+    mx-auto
+    mb-7
+    mt-12
+    flex
+    w-fit
+    items-center
+    gap-2
+    rounded-full
+    border
+    border-white/[0.08]
+    bg-white/[0.035]
+    px-3
+    py-2.5
+    backdrop-blur-md
+    sm:mt-14
+    lg:mt-16
+    sm:py-3
+  "
+>
+  <span className="relative flex h-2 w-2">
+    <span
+      className="
+        absolute
+        inline-flex
+        h-full
+        w-full
+        animate-ping
+        rounded-full
+        bg-emerald-400
+        opacity-60
+      "
+    />
+
+    <span
+      className="
+        relative
+        inline-flex
+        h-2
+        w-2
+        rounded-full
+        bg-emerald-400
+      "
+    />
+  </span>
+
+  <span
+    className="
+      text-[9px]
+      font-black
+      uppercase
+      tracking-[0.2em]
+      text-[#8B8985]
+    "
+  >
+    Companies hiring
+  </span>
+</div>
+          {/* HERO CONTENT */}
 
           <div className="mx-auto max-w-4xl text-center">
-            {/* Small badge */}
-
-            <div
-              className="
-                hero-fade-in
-                mx-auto
-                mb-6
-                flex
-                w-fit
-                items-center
-                gap-2
-                rounded-full
-                border
-                border-blue-100
-                bg-white/80
-                px-4
-                py-2
-                text-xs
-                font-bold
-                text-blue-600
-                shadow-sm
-                backdrop-blur-md
-                dark:border-blue-500/20
-                dark:bg-white/[0.04]
-                dark:text-blue-400
-              "
-            >
-              <Sparkles
-                size={14}
-                className="animate-pulse"
-              />
-
-              <span>Discover companies worth knowing</span>
-            </div>
-
-            {/* =================================================
-                CRAZY ANIMATED LINE
-            ================================================== */}
 
             <div className="overflow-hidden">
+
               <h1
                 className="
                   hero-title
                   text-4xl
                   font-black
-                  leading-[1.05]
+                  leading-[1.04]
                   tracking-[-0.055em]
-                  text-slate-900
+                  text-[#F5F2EA]
                   sm:text-5xl
                   lg:text-[64px]
-                  dark:text-white
                 "
               >
-                The next company
+                Find companies
+
                 <br />
 
                 <span
                   className="
-                    relative
                     inline-block
                     bg-gradient-to-r
-                    from-blue-600
-                    via-indigo-600
-                    to-purple-600
+                    from-blue-500
+                    via-indigo-500
+                    to-purple-500
                     bg-clip-text
                     text-transparent
                   "
                 >
-                  you’ll love working for
+                  worth working for
                 </span>
 
                 <br />
 
-                <span className="text-slate-900 dark:text-white">
-                  might be here
+                <span>
+                  and grow with them
                   <span
                     className={`
                       ml-1
                       inline-block
-                      text-blue-600
+                      text-blue-400
                       transition-opacity
                       duration-150
-                      dark:text-blue-400
-                      ${showCursor ? "opacity-100" : "opacity-0"}
+                      ${
+                        showCursor
+                          ? "opacity-100"
+                          : "opacity-0"
+                      }
                     `}
                   >
                     |
                   </span>
                 </span>
               </h1>
-            </div>
 
-            {/* Supporting text */}
+            </div>
 
             <p
               className="
                 hero-fade-in-delay
                 mx-auto
-                mt-6
+                mt-5
                 max-w-2xl
                 text-sm
                 leading-7
-                text-slate-500
+                text-[#8B8985]
                 sm:text-base
-                dark:text-slate-400
               "
             >
-              Explore companies, discover their open roles, and find
-              a workplace that actually feels right for your next move.
+              Explore companies, discover their open roles,
+              and find the workplace that feels right for
+              your next move.
             </p>
+
           </div>
 
-          {/* =================================================
-              SEARCH
-          ================================================== */}
+          {/* SEARCH */}
 
           <div
             className="
               hero-search
               mx-auto
-              mt-10
-              max-w-2xl
+              mt-9
+              max-w-[720px]
             "
           >
+
             <div
               className="
                 group
-                relative
                 flex
                 items-center
+                overflow-hidden
                 rounded-2xl
                 border
-                border-slate-200
-                bg-white
-                p-2
-                shadow-[0_20px_60px_rgba(15,23,42,0.08)]
+                border-white/[0.10]
+                bg-[#111214]
+                shadow-[0_20px_60px_rgba(0,0,0,.45)]
                 transition-all
                 duration-300
-                focus-within:border-blue-500
-                focus-within:shadow-[0_20px_70px_rgba(37,99,235,0.12)]
-                dark:border-slate-800
-                dark:bg-slate-900
-                dark:shadow-black/20
+                focus-within:border-indigo-500/40
+                focus-within:shadow-[0_20px_70px_rgba(79,70,229,.10)]
               "
             >
+
               <Search
-                size={22}
+                size={19}
                 className="
-                  ml-4
+                  ml-5
                   shrink-0
-                  text-slate-400
+                  text-[#5C5A55]
                   transition-colors
-                  duration-300
-                  group-focus-within:text-blue-600
-                  dark:group-focus-within:text-blue-400
+                  group-focus-within:text-indigo-400
                 "
               />
 
@@ -301,89 +335,117 @@ const BrowseCompanies = () => {
                 type="text"
                 placeholder="Search companies by name..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) =>
+                  setSearch(e.target.value)
+                }
                 className="
                   w-full
+                  min-w-0
                   bg-transparent
                   px-4
                   py-4
                   text-sm
-                  text-slate-900
+                  text-[#F5F2EA]
                   outline-none
-                  placeholder:text-slate-400
-                  dark:text-white
+                  placeholder:text-[#5C5A55]
                 "
               />
 
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="
+                    mr-2
+                    rounded-lg
+                    p-2
+                    text-[#5C5A55]
+                    transition
+                    hover:bg-white/[0.05]
+                    hover:text-white
+                  "
+                >
+                  <X size={15} />
+                </button>
+              )}
+
               <button
                 type="button"
+                onClick={() => {}}
                 className="
                   hidden
-                  rounded-xl
-                  bg-blue-600
-                  px-5
-                  py-3
+                  items-center
+                  gap-2
+                  bg-indigo-400
+                  px-7
+                  py-4
                   text-sm
-                  font-bold
-                  text-white
-                  shadow-lg
-                  shadow-blue-600/20
-                  transition-all
-                  duration-300
-                  hover:-translate-y-0.5
-                  hover:bg-blue-700
-                  sm:block
+                  font-semibold
+                  text-[#0A0A0C]
+                  transition
+                  hover:bg-indigo-300
+                  sm:flex
                 "
               >
                 Search
+                <Search size={15} />
               </button>
+
             </div>
+
+            {/* SEARCH META */}
+
+            <div
+              className="
+                mt-3
+                flex
+                items-center
+                justify-between
+                px-1
+                text-[10px]
+                text-[#5C5A55]
+              "
+            >
+              <span>
+                {search
+                  ? `${filteredCompanies.length} results found`
+                  : `${companies.length} companies available`}
+              </span>
+
+              <span className="hidden sm:block">
+                Search by company name
+              </span>
+            </div>
+
           </div>
 
-          {/* Tiny trust line */}
-
-          <div
-            className="
-              mt-5
-              flex
-              items-center
-              justify-center
-              gap-2
-              text-[11px]
-              font-semibold
-              uppercase
-              tracking-[0.14em]
-              text-slate-400
-            "
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-
-            <span>
-              Companies hiring • Opportunities waiting
-            </span>
-          </div>
         </div>
       </section>
 
       {/* =====================================================
-          COMPANY CONTENT
+          COMPANIES
       ====================================================== */}
 
       <section
         className="
+          relative
           mx-auto
-          max-w-7xl
-          px-4
+          max-w-[1200px]
+          px-5
           pb-20
-          sm:px-6
+          pt-10
+          sm:px-8
+          sm:pt-12
           lg:px-8
+          lg:pt-14
         "
       >
-        {/* Section Header */}
+
+        {/* SECTION HEADER */}
 
         <div
           className="
-            mb-8
+            mb-7
             flex
             flex-col
             gap-4
@@ -392,69 +454,78 @@ const BrowseCompanies = () => {
             sm:justify-between
           "
         >
+
           <div>
-            <div className="flex items-center gap-2">
+
+            <div className="flex items-center gap-2.5">
+
               <Building2
-                size={22}
-                className="text-blue-600 dark:text-blue-400"
+                size={18}
+                className="text-indigo-400"
               />
 
               <h2
                 className="
-                  text-2xl
+                  text-xl
                   font-bold
-                  text-slate-900
-                  dark:text-white
+                  tracking-tight
+                  text-[#F5F2EA]
+                  sm:text-2xl
                 "
               >
-                Top Companies
+                Explore companies
               </h2>
+
             </div>
 
             <p
               className="
-                mt-2
-                text-sm
-                text-slate-500
-                dark:text-slate-400
+                mt-1.5
+                text-xs
+                text-[#6B6963]
+                sm:text-sm
               "
             >
-              {filteredCompanies.length} companies available
+              {filteredCompanies.length}{" "}
+              {filteredCompanies.length === 1
+                ? "company"
+                : "companies"}{" "}
+              available
             </p>
+
           </div>
 
           {search && (
             <button
+              type="button"
               onClick={() => setSearch("")}
               className="
                 flex
+                w-fit
                 items-center
                 gap-2
-                text-sm
-                font-semibold
-                text-blue-600
-                transition-colors
-                hover:text-blue-700
-                dark:text-blue-400
+                text-xs
+                font-medium
+                text-indigo-400
+                transition
+                hover:text-indigo-300
               "
             >
               Clear search
-
-              <ArrowUpRight size={16} />
+              <X size={14} />
             </button>
           )}
+
         </div>
 
-        {/* =================================================
-            LOADING
-        ================================================== */}
+        {/* LOADING */}
 
         {isLoading && (
           <div
             className="
               grid
               grid-cols-1
-              gap-6
+              gap-4
               sm:grid-cols-2
               lg:grid-cols-3
             "
@@ -463,106 +534,229 @@ const BrowseCompanies = () => {
               <div
                 key={item}
                 className="
-                  h-72
+                  h-64
                   animate-pulse
-                  rounded-3xl
-                  bg-slate-200
-                  dark:bg-slate-800
+                  rounded-2xl
+                  border
+                  border-white/[0.06]
+                  bg-[#111214]
                 "
               />
             ))}
           </div>
         )}
 
-        {/* =================================================
-            COMPANIES
-        ================================================== */}
+        {/* COMPANIES */}
 
-        {!isLoading && filteredCompanies.length > 0 && (
-          <div
-            className="
-              grid
-              grid-cols-1
-              gap-6
-              sm:grid-cols-2
-              lg:grid-cols-3
-            "
-          >
-            {filteredCompanies.map((company) => (
-              <CompanyCard
-                key={company._id}
-                company={company}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* =================================================
-            EMPTY STATE
-        ================================================== */}
-
-        {!isLoading && filteredCompanies.length === 0 && (
-          <div
-            className="
-              flex
-              min-h-[300px]
-              flex-col
-              items-center
-              justify-center
-              rounded-3xl
-              border
-              border-dashed
-              border-slate-300
-              bg-white
-              text-center
-              dark:border-slate-700
-              dark:bg-slate-900
-            "
-          >
+        {!isLoading &&
+          filteredCompanies.length > 0 && (
             <div
               className="
-                mb-4
+                grid
+                grid-cols-1
+                gap-4
+                sm:grid-cols-2
+                lg:grid-cols-3
+              "
+            >
+              {filteredCompanies.map((company) => (
+                <CompanyCard
+                  key={company._id}
+                  company={company}
+                />
+              ))}
+            </div>
+          )}
+
+        {/* EMPTY */}
+
+        {!isLoading &&
+          filteredCompanies.length === 0 && (
+            <div
+              className="
                 flex
-                h-16
-                w-16
+                min-h-[320px]
+                flex-col
                 items-center
                 justify-center
                 rounded-2xl
-                bg-slate-100
-                dark:bg-slate-800
+                border
+                border-white/[0.07]
+                bg-[#111214]
+                px-6
+                text-center
               "
             >
-              <Building2
-                size={30}
-                className="text-slate-400"
-              />
+
+              <div
+                className="
+                  mb-4
+                  flex
+                  h-14
+                  w-14
+                  items-center
+                  justify-center
+                  rounded-2xl
+                  border
+                  border-white/[0.07]
+                  bg-white/[0.025]
+                "
+              >
+                <Building2
+                  size={24}
+                  className="text-[#5C5A55]"
+                />
+              </div>
+
+              <h3
+                className="
+                  text-base
+                  font-semibold
+                  text-[#F5F2EA]
+                "
+              >
+                No companies found
+              </h3>
+
+              <p
+                className="
+                  mt-2
+                  max-w-sm
+                  text-xs
+                  leading-6
+                  text-[#6B6963]
+                "
+              >
+                We couldn't find any company matching
+                "{search}". Try another company name.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="
+                  mt-5
+                  rounded-xl
+                  bg-indigo-400
+                  px-4
+                  py-2.5
+                  text-xs
+                  font-semibold
+                  text-[#0A0A0C]
+                  transition
+                  hover:bg-indigo-300
+                "
+              >
+                View all companies
+              </button>
+
+            </div>
+          )}
+
+      </section>
+
+      {/* =====================================================
+          BOTTOM CTA
+      ====================================================== */}
+
+      {!isLoading &&
+        filteredCompanies.length > 0 && (
+          <section className="px-5 pb-16 sm:px-8">
+
+            <div
+              className="
+                mx-auto
+                flex
+                max-w-[1200px]
+                flex-col
+                gap-5
+                rounded-2xl
+                border
+                border-white/[0.07]
+                bg-[#111214]
+                px-5
+                py-5
+                sm:flex-row
+                sm:items-center
+                sm:justify-between
+                sm:px-7
+              "
+            >
+
+              <div>
+
+                <div className="flex items-center gap-2">
+
+                  <Sparkles
+                    size={14}
+                    className="text-indigo-400"
+                  />
+
+                  <span
+                    className="
+                      text-[9px]
+                      font-black
+                      uppercase
+                      tracking-[0.18em]
+                      text-indigo-400
+                    "
+                  >
+                    Find your next move
+                  </span>
+
+                </div>
+
+                <h3
+                  className="
+                    mt-1.5
+                    text-sm
+                    font-semibold
+                    text-[#F5F2EA]
+                  "
+                >
+                  Find a company where you belong.
+                </h3>
+
+              </div>
+
+              <button
+                type="button"
+                className="
+                  group
+                  flex
+                  w-fit
+                  items-center
+                  gap-2
+                  rounded-xl
+                  border
+                  border-white/[0.08]
+                  bg-white/[0.03]
+                  px-4
+                  py-2.5
+                  text-xs
+                  font-medium
+                  text-[#B8B6B0]
+                  transition
+                  hover:border-indigo-500/25
+                  hover:bg-indigo-500/[0.06]
+                  hover:text-indigo-300
+                "
+              >
+                Explore companies
+
+                <ArrowRight
+                  size={14}
+                  className="
+                    transition-transform
+                    group-hover:translate-x-0.5
+                  "
+                />
+              </button>
+
             </div>
 
-            <h3
-              className="
-                text-lg
-                font-bold
-                text-slate-900
-                dark:text-white
-              "
-            >
-              No companies found
-            </h3>
-
-            <p
-              className="
-                mt-2
-                max-w-sm
-                text-sm
-                text-slate-500
-                dark:text-slate-400
-              "
-            >
-              Try searching with a different company name.
-            </p>
-          </div>
+          </section>
         )}
-      </section>
 
       {/* =====================================================
           ANIMATIONS
@@ -656,6 +850,7 @@ const BrowseCompanies = () => {
           }
         }
       `}</style>
+
     </main>
   );
 };
