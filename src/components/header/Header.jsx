@@ -29,6 +29,7 @@ const Header = () => {
   const profileRef = useRef(null);
 
   const user = useSelector((state) => state.auth.user);
+  console.log(user, "user")
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -78,11 +79,11 @@ const Header = () => {
      LOGOUT
   --------------------------------------------- */
   const handleLogout = async () => {
-    dispatch(logout());
-    setIsProfileOpen(false);
 
     try {
       await logoutUser().unwrap();
+      setIsProfileOpen(false);
+      dispatch(logout());
     } catch {
       // Local logout is already completed.
     }
@@ -108,11 +109,11 @@ const Header = () => {
     },
     ...(user
       ? [
-          {
-            name: "Saved",
-            path: "/candidate/saved-jobs",
-          },
-        ]
+        {
+          name: "Saved",
+          path: "/saved-jobs",
+        },
+      ]
       : []),
   ];
 
@@ -121,54 +122,56 @@ const Header = () => {
   --------------------------------------------- */
   const mobileLinks = user
     ? [
-        {
-          name: "Home",
-          path: "/",
-          icon: Home,
-        },
-        {
-          name: "Jobs",
-          path: "/find-job",
-          icon: BriefcaseBusiness,
-        },
-        {
-          name: "Companies",
-          path: "/companies",
-          icon: Building2,
-        },
-        {
-          name: "Saved",
-          path: "/candidate/saved-jobs",
-          icon: Bookmark,
-        },
-        
-      ]
+      {
+        name: "Home",
+        path: "/",
+        icon: Home,
+      },
+      {
+        name: "Jobs",
+        path: "/find-job",
+        icon: BriefcaseBusiness,
+      },
+      {
+        name: "Companies",
+        path: "/companies",
+        icon: Building2,
+      },
+      {
+        name: "Saved",
+        path: "/saved-jobs",
+        icon: Bookmark,
+      },
+
+    ]
     : [
-        {
-          name: "Home",
-          path: "/",
-          icon: Home,
-        },
-        {
-          name: "Jobs",
-          path: "/find-job",
-          icon: BriefcaseBusiness,
-        },
-        {
-          name: "Companies",
-          path: "/companies",
-          icon: Building2,
-        },
-      
-      ];
+      {
+        name: "Home",
+        path: "/",
+        icon: Home,
+      },
+      {
+        name: "Jobs",
+        path: "/find-job",
+        icon: BriefcaseBusiness,
+      },
+      {
+        name: "Companies",
+        path: "/companies",
+        icon: Building2,
+      },
+
+    ];
+
+
 
   return (
     <>
       {/* =====================================================
           FLOATING HEADER
       ===================================================== */}
-     <header
-  className="
+      <header
+        className="
     pointer-events-none
     fixed
     inset-x-0
@@ -184,7 +187,7 @@ const Header = () => {
     md:px-5
     lg:px-7
   "
->
+      >
         <nav
           className={`
             pointer-events-auto
@@ -212,15 +215,14 @@ const Header = () => {
             lg:rounded-[22px]
             lg:px-5
 
-            ${
-              isScrolled
-                ? `
+            ${isScrolled
+              ? `
                   border-amber-300/20
                   bg-[#080b0b]/92
                   shadow-[0_18px_60px_rgba(0,0,0,.38)]
                   backdrop-blur-2xl
                 `
-                : `
+              : `
                   border-white/[0.09]
                   bg-[#071012]/75
                   shadow-[0_10px_40px_rgba(0,0,0,.20)]
@@ -385,10 +387,9 @@ const Header = () => {
                   lg:px-4
                   lg:text-[13px]
 
-                  ${
-                    isActive
-                      ? "text-white"
-                      : "text-white/50 hover:bg-white/[0.045] hover:text-white"
+                  ${isActive
+                    ? "text-white"
+                    : "text-white/50 hover:bg-white/[0.045] hover:text-white"
                   }
                 `}
               >
@@ -408,10 +409,9 @@ const Header = () => {
                         transition-all
                         duration-300
 
-                        ${
-                          isActive
-                            ? "w-5"
-                            : "w-0 group-hover:w-4"
+                        ${isActive
+                          ? "w-5"
+                          : "w-0 group-hover:w-4"
                         }
                       `}
                     />
@@ -427,61 +427,61 @@ const Header = () => {
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
             {!user ? (
               <>
-              
+
 
                 {/* LOGIN */}
-              <button
-  type="button"
-  onClick={() => setIsLoginCard(true)}
-  className="
-    group
-    inline-flex
-    h-9
-    items-center
-    justify-center
-    gap-1.5
-    rounded-full
-    border
-    border-[#F5D76E]/25
-    bg-[#F5D76E]
-    px-3.5
-    text-[11px]
-    font-extrabold
-    text-[#0a0b09]
-    shadow-[0_7px_24px_rgba(212,175,55,.13)]
-    transition-all
-    duration-300
+                <button
+                  type="button"
+                  onClick={() => setIsLoginCard(true)}
+                  className="
+                          group
+                          inline-flex
+                          h-9
+                          items-center
+                          justify-center
+                          gap-1.5
+                          rounded-full
+                          border
+                          border-[#F5D76E]/25
+                          bg-[#F5D76E]
+                          px-3.5
+                          text-[11px]
+                          font-extrabold
+                          text-[#0a0b09]
+                          shadow-[0_7px_24px_rgba(212,175,55,.13)]
+                          transition-all
+                          duration-300
 
-    hover:-translate-y-0.5
-    hover:bg-[#FFF2A8]
-    hover:shadow-[0_10px_30px_rgba(212,175,55,.22)]
+                          hover:-translate-y-0.5
+                          hover:bg-[#FFF2A8]
+                          hover:shadow-[0_10px_30px_rgba(212,175,55,.22)]
 
-    focus-visible:outline-none
-    focus-visible:ring-2
-    focus-visible:ring-[#F5D76E]
+                          focus-visible:outline-none
+                          focus-visible:ring-2
+                          focus-visible:ring-[#F5D76E]
 
-    sm:h-10
-    sm:px-4
-    sm:text-[12px]
+                          sm:h-10
+                          sm:px-4
+                          sm:text-[12px]
 
-    md:h-11
-    md:px-5
-    md:text-[13px]
-  "
->
-  <span>Login</span>
+                          md:h-11
+                          md:px-5
+                          md:text-[13px]
+                        "
+                >
+                  <span>Login</span>
 
-  <span
-    className="
-      inline-block
-      transition-transform
-      duration-300
-      group-hover:translate-x-0.5
-    "
-  >
-    →
-  </span>
-</button>
+                  <span
+                    className="
+                          inline-block
+                          transition-transform
+                          duration-300
+                          group-hover:translate-x-0.5
+                        "
+                  >
+                    →
+                  </span>
+                </button>
               </>
             ) : (
               /* =============================================
@@ -557,21 +557,26 @@ const Header = () => {
                   </span>
 
                   {/* USER NAME */}
-                  <span
-                    className="
-                      hidden
-                      max-w-24
-                      truncate
-                      text-[12px]
-                      font-bold
-                      text-white
-
-                      lg:block
-                      xl:max-w-32
-                    "
-                  >
-                    {user?.name || "Profile"}
-                  </span>
+                 <span
+  className="
+    hidden
+    max-w-24
+    truncate
+    text-[12px]
+    font-bold
+    text-white
+    lg:block
+    xl:max-w-32
+  "
+>
+  {user?.role === "admin" ? (
+    <span className="inline-flex items-center rounded-full border border-red-400/20 bg-red-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-red-300">
+      Admin
+    </span>
+  ) : (
+    user?.name
+  )}
+</span>
 
                   <ChevronDown
                     size={14}
@@ -580,10 +585,9 @@ const Header = () => {
                       transition-transform
                       duration-300
 
-                      ${
-                        isProfileOpen
-                          ? "rotate-180"
-                          : ""
+                      ${isProfileOpen
+                        ? "rotate-180"
+                        : ""
                       }
                     `}
                   />
@@ -622,6 +626,7 @@ const Header = () => {
                     >
                       <p className="truncate text-sm font-bold text-white">
                         {user?.name || "Candidate"}
+
                       </p>
 
                       <p className="mt-0.5 truncate text-xs text-white/40">
@@ -630,95 +635,142 @@ const Header = () => {
                     </div>
 
                     {/* DASHBOARD */}
-                    <Link
-                      to="/candidate"
-                      onClick={() =>
-                        setIsProfileOpen(false)
-                      }
-                      className="
-                        mt-2
-                        flex
-                        min-h-11
-                        items-center
-                        gap-3
-                        rounded-xl
-                        px-3
-                        text-sm
-                        font-medium
-                        text-white/65
-                        transition
+                    {user?.role === "user" && (
+                      <>
+                        <Link
+                          to="/candidate"
+                          onClick={() => setIsProfileOpen(false)}
+                          className="
+        mt-2
+        flex
+        min-h-11
+        items-center
+        gap-3
+        rounded-xl
+        px-3
+        text-sm
+        font-medium
+        text-white/65
+        transition
+        hover:bg-white/[0.06]
+        hover:text-white
+      "
+                        >
+                          <LayoutDashboard size={17} />
+                          Dashboard
+                        </Link>
 
-                        hover:bg-white/[0.06]
-                        hover:text-white
-                      "
-                    >
-                      <LayoutDashboard size={17} />
-                      Dashboard
-                    </Link>
+                        {/* SAVED JOBS */}
+                        <Link
+                          to="/candidate/saved-jobs"
+                          onClick={() => setIsProfileOpen(false)}
+                          className="
+        flex
+        min-h-11
+        items-center
+        gap-3
+        rounded-xl
+        px-3
+        text-sm
+        font-medium
+        text-white/65
+        transition
+        hover:bg-white/[0.06]
+        hover:text-white
+      "
+                        >
+                          <Bookmark size={17} />
+                          Saved jobs
+                        </Link>
 
-                    {/* SAVED JOBS */}
-                    <Link
-                      to="/candidate/saved-jobs"
-                      onClick={() =>
-                        setIsProfileOpen(false)
-                      }
-                      className="
-                        flex
-                        min-h-11
-                        items-center
-                        gap-3
-                        rounded-xl
-                        px-3
-                        text-sm
-                        font-medium
-                        text-white/65
-                        transition
+                        {/* LOGOUT */}
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          disabled={isLoading}
+                          className="
+        mt-1
+        flex
+        min-h-11
+        w-full
+        items-center
+        gap-3
+        rounded-xl
+        px-3
+        text-sm
+        font-medium
+        text-red-300
+        transition
+        hover:bg-red-500/10
+        disabled:opacity-50
+      "
+                        >
+                          <LogOut size={17} />
+                          {isLoading ? "Logging out…" : "Log out"}
+                        </button>
+                      </>
+                    )}
 
-                        hover:bg-white/[0.06]
-                        hover:text-white
-                      "
-                    >
-                      <Bookmark size={17} />
-                      Saved jobs
-                    </Link>
+                    {user?.role === "admin" && (
+                      <>
+                        <Link
+                          to="/admin"
+                          onClick={() => setIsProfileOpen(false)}
+                          className="
+        mt-2
+        flex
+        min-h-11
+        items-center
+        gap-3
+        rounded-xl
+        px-3
+        text-sm
+        font-medium
+        text-white/65
+        transition
+        hover:bg-white/[0.06]
+        hover:text-white
+      "
+                        >
+                          <LayoutDashboard size={17} />
+                          Dashboard
+                        </Link>
 
-                    {/* LOGOUT */}
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      disabled={isLoading}
-                      className="
-                        mt-1
-                        flex
-                        min-h-11
-                        w-full
-                        items-center
-                        gap-3
-                        rounded-xl
-                        px-3
-                        text-sm
-                        font-medium
-                        text-red-300
-                        transition
+                        {/* LOGOUT */}
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          disabled={isLoading}
+                          className="
+        mt-1
+        flex
+        min-h-11
+        w-full
+        items-center
+        gap-3
+        rounded-xl
+        px-3
+        text-sm
+        font-medium
+        text-red-300
+        transition
+        hover:bg-red-500/10
+        disabled:opacity-50
+      "
+                        >
+                          <LogOut size={17} />
+                          {isLoading ? "Logging out…" : "Log out"}
+                        </button>
+                      </>
+                    )}
 
-                        hover:bg-red-500/10
-
-                        disabled:opacity-50
-                      "
-                    >
-                      <LogOut size={17} />
-
-                      {isLoading
-                        ? "Logging out…"
-                        : "Log out"}
-                    </button>
                   </div>
                 )}
               </div>
             )}
           </div>
 
-        
+
         </nav>
       </header>
 
@@ -815,10 +867,9 @@ const Header = () => {
                   duration-200
                   active:scale-95
 
-                  ${
-                    isActive
-                      ? "text-[#F5D76E]"
-                      : "text-white/40"
+                  ${isActive
+                    ? "text-[#F5D76E]"
+                    : "text-white/40"
                   }
                 `}
               >
@@ -834,10 +885,9 @@ const Header = () => {
                         rounded-xl
                         transition
 
-                        ${
-                          isActive
-                            ? "bg-[#F5D76E]/10"
-                            : ""
+                        ${isActive
+                          ? "bg-[#F5D76E]/10"
+                          : ""
                         }
                       `}
                     >

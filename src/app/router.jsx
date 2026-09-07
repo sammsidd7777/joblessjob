@@ -15,6 +15,7 @@ import About from "../pages/Legal/About";
 import Contact from "../pages/Legal/Contact";
 import Disclaimer from "../pages/Legal/Disclaimer";
 import CookiePolicy from "../pages/Legal/CookiePolicy";
+import SavedJobsHome from "../pages/candidate/SavedJobsHome";
 
 // =====================================================
 // PUBLIC LAYOUT
@@ -138,20 +139,20 @@ const router = createBrowserRouter([
         element: Loadable(Home),
       },
 
-     {
-  path: "find-job",
-  element: Loadable(FindJob),
-},
+      {
+        path: "find-job",
+        element: Loadable(FindJob),
+      },
 
-{
-  path: "find-job/:searchTerm",
-  element: Loadable(FindJob),
-},
+      {
+        path: "find-job/:searchTerm",
+        element: Loadable(FindJob),
+      },
 
-{
-  path: "find-job/:searchTerm/:location",
-  element: Loadable(FindJob),
-},
+      {
+        path: "find-job/:searchTerm/:location",
+        element: Loadable(FindJob),
+      },
 
       // Job Details
       {
@@ -173,6 +174,10 @@ const router = createBrowserRouter([
       {
         path: "company/:id",
         element: Loadable(CompanyDetails),
+      },
+      {
+        path:"saved-jobs",
+        element:<SavedJobsHome />
       },
 
 

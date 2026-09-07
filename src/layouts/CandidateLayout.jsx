@@ -52,6 +52,8 @@ const navigationItems = [
 const CandidateLayout = () => {
   const { data: user, isLoading } = useGetProfileQuery();
 
+  console.log(user,"userLayout")
+
   const [logoutUser, { isLoading: isLoggingOut }] =
     useLogoutUserMutation();
 
@@ -81,8 +83,8 @@ const CandidateLayout = () => {
     return <Loader message="Loading your career..." />;
   }
 
-  const userName = user?.name || "Candidate";
-  const userEmail = user?.email || "user@example.com";
+  const userName = user?.user?.name || "Candidate";
+  const userEmail = user?.user?.email || "user@example.com";
 
   const userInitials = userName
     .split(" ")
