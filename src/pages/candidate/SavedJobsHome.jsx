@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Bookmark,
   BriefcaseBusiness,
@@ -22,17 +22,53 @@ import {
 } from "../../RTK/savedJobsApi";
 
 import Seo from "../../components/common/Seo";
+import NotificationToasty from "../../components/common/NotificationToasty";
 
 const SavedJobsHome = () => {
-  const { data, isLoading, isError } = useGetSavedJobsQuery();
+  /* =========================================================
+     API
+  ========================================================= */
+
+  const {
+    data,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useGetSavedJobsQuery();
 
   const [deleteSavedJob, { isLoading: deleting }] =
     useDeleteSavedJobMutation();
+
+  /* =========================================================
+     STATE
+  ========================================================= */
 
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [selectedJob, setSelectedJob] = useState(null);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [message, setMessage] = useState("");
+
+  /* =========================================================
+     TOAST
+     IMPORTANT:
+     Hook must stay before conditional returns.
+  ========================================================= */
+
+  useEffect(() => {
+    if (!message) return;
+
+    const timer = setTimeout(() => {
+      setMessage("");
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, [message]);
+
+  /* =========================================================
+     DATA
+  ========================================================= */
 
   const savedJobs = data?.savedJobs || [];
 
@@ -297,7 +333,9 @@ const SavedJobsHome = () => {
           getCompanyName(job)?.toLowerCase() || "";
 
         const location =
-          job?.location?.toLowerCase() || "";
+          typeof job?.location === "string"
+            ? job.location.toLowerCase()
+            : "";
 
         const employmentType =
           job?.employmentType?.toLowerCase() || "";
@@ -339,34 +377,55 @@ const SavedJobsHome = () => {
   ).length;
 
   /* =========================================================
-     REMOVE
+     REMOVE MODAL
   ========================================================= */
 
   const openRemoveModal = (job) => {
+    if (deleting) return;
+
     setSelectedJob(job);
     setShowRemoveModal(true);
   };
 
   const closeRemoveModal = () => {
+    if (deleting) return;
+
     setSelectedJob(null);
     setShowRemoveModal(false);
   };
 
+  /* =========================================================
+     CONFIRM REMOVE
+  ========================================================= */
+
   const confirmRemove = async () => {
-    if (!selectedJob?._id) {
+    if (!selectedJob?._id || deleting) {
       return;
     }
 
     try {
-      await deleteSavedJob(
-        selectedJob._id
-      ).unwrap();
+      await deleteSavedJob(selectedJob._id).unwrap();
 
-      closeRemoveModal();
+      /*
+        RTK Query invalidates SavedJobs automatically.
+
+        We close modal after successful deletion.
+        The active query will refetch automatically.
+      */
+
+      setMessage("Job removed successfully");
+
+      setSelectedJob(null);
+      setShowRemoveModal(false);
     } catch (error) {
       console.error(
         "Failed to remove saved job:",
         error
+      );
+
+      setMessage(
+        error?.data?.message ||
+          "Failed to remove saved job"
       );
     }
   };
@@ -483,9 +542,7 @@ const SavedJobsHome = () => {
 
             <button
               type="button"
-              onClick={() =>
-                window.location.reload()
-              }
+              onClick={refetch}
               className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-white px-6 text-sm font-bold text-black transition hover:bg-white/90"
             >
               Try Again
@@ -504,7 +561,19 @@ const SavedJobsHome = () => {
     <div className="relative min-h-screen overflow-hidden bg-[#08090b] text-white">
       <Seo title="Saved Jobs" noindex />
 
-      {/* BACKGROUND */}
+      {/* =====================================================
+          TOAST
+          IMPORTANT:
+          Toast is now inside main page return.
+      ===================================================== */}
+
+      {message && (
+        <NotificationToasty message={message} />
+      )}
+
+      {/* =====================================================
+          BACKGROUND
+      ===================================================== */}
 
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.4]"
@@ -521,13 +590,19 @@ const SavedJobsHome = () => {
 
       <div className="pointer-events-none absolute right-[-180px] top-[500px] h-[420px] w-[420px] rounded-full bg-purple-600/[0.04] blur-[130px]" />
 
-      {/* =====================================================
-          IMPORTANT:
-          HEADER IS NOT TOUCHED.
-          CONTENT STARTS BELOW HEADER.
-      ===================================================== */}
-
       <main className="relative mx-auto max-w-[1408px] px-5 pb-24 pt-24 sm:px-7 lg:px-10">
+
+        {/* ===================================================
+            FETCHING INDICATOR
+        =================================================== */}
+
+        {isFetching && !isLoading && (
+          <div className="mb-4 flex items-center justify-end gap-2 text-[10px] font-semibold text-white/25">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-400" />
+            Updating saved jobs...
+          </div>
+        )}
+
         {/* ===================================================
             HERO
         =================================================== */}
@@ -537,8 +612,6 @@ const SavedJobsHome = () => {
 
           <div className="relative flex flex-col justify-between gap-7 lg:flex-row lg:items-end">
             <div className="max-w-3xl">
-              {/* EYEBROW */}
-
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.04] px-3 py-1.5">
                 <Bookmark
                   size={12}
@@ -550,8 +623,6 @@ const SavedJobsHome = () => {
                   Saved jobs
                 </span>
               </div>
-
-              {/* HEADING */}
 
               <h1 className="text-4xl font-black tracking-[-0.055em] sm:text-5xl lg:text-[62px] lg:leading-[1.02]">
                 Your saved
@@ -569,8 +640,6 @@ const SavedJobsHome = () => {
                 you're ready.
               </p>
             </div>
-
-            {/* EXPLORE */}
 
             <Link
               to="/find-job"
@@ -597,7 +666,6 @@ const SavedJobsHome = () => {
 
         <section className="mt-6">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {/* TOTAL */}
 
             <div className="group rounded-3xl border border-white/[0.07] bg-[#0d0f13] p-5 transition hover:-translate-y-0.5 hover:border-white/[0.13]">
               <div className="flex items-center justify-between">
@@ -624,8 +692,6 @@ const SavedJobsHome = () => {
               </div>
             </div>
 
-            {/* ACTIVE */}
-
             <div className="group rounded-3xl border border-white/[0.07] bg-[#0d0f13] p-5 transition hover:-translate-y-0.5 hover:border-white/[0.13]">
               <div className="flex items-center justify-between">
                 <div>
@@ -648,8 +714,6 @@ const SavedJobsHome = () => {
               </div>
             </div>
 
-            {/* CLOSED */}
-
             <div className="group rounded-3xl border border-white/[0.07] bg-[#0d0f13] p-5 transition hover:-translate-y-0.5 hover:border-white/[0.13]">
               <div className="flex items-center justify-between">
                 <div>
@@ -671,6 +735,7 @@ const SavedJobsHome = () => {
                 </div>
               </div>
             </div>
+
           </div>
         </section>
 
@@ -681,6 +746,7 @@ const SavedJobsHome = () => {
         <section className="mt-8">
           <div className="rounded-3xl border border-white/[0.08] bg-[#0d0f13] p-2">
             <div className="flex flex-col gap-2 md:flex-row">
+
               <div className="relative flex-1">
                 <Search
                   size={17}
@@ -733,6 +799,7 @@ const SavedJobsHome = () => {
                   className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-white/30"
                 />
               </div>
+
             </div>
           </div>
         </section>
@@ -834,6 +901,7 @@ const SavedJobsHome = () => {
             </button>
           </div>
         ) : (
+
           /* =================================================
              JOB GRID
           ================================================= */
@@ -884,7 +952,6 @@ const SavedJobsHome = () => {
                       : "border-white/[0.08] hover:-translate-y-1.5 hover:border-white/[0.15] hover:bg-[#0f1116] hover:shadow-[0_25px_70px_rgba(0,0,0,0.4)]"
                   }`}
                 >
-                  {/* TOP GRADIENT */}
 
                   <div
                     className={`h-[2px] w-full ${
@@ -895,10 +962,13 @@ const SavedJobsHome = () => {
                   />
 
                   <div className="flex flex-1 flex-col p-5">
+
                     {/* CARD HEADER */}
 
                     <div className="flex items-start justify-between gap-4">
+
                       <div className="flex min-w-0 items-start gap-3.5">
+
                         {/* COMPANY LOGO */}
 
                         {companyId ? (
@@ -946,9 +1016,10 @@ const SavedJobsHome = () => {
                           </div>
                         )}
 
-                        {/* TITLE + COMPANY */}
+                        {/* TITLE */}
 
                         <div className="min-w-0 pt-0.5">
+
                           <h3
                             className={`line-clamp-2 text-[15px] font-bold leading-5 tracking-tight ${
                               closed
@@ -972,6 +1043,7 @@ const SavedJobsHome = () => {
                               {companyName}
                             </p>
                           )}
+
                         </div>
                       </div>
 
@@ -992,11 +1064,13 @@ const SavedJobsHome = () => {
                           fill="currentColor"
                         />
                       </button>
+
                     </div>
 
                     {/* STATUS */}
 
                     <div className="mt-5 flex items-center justify-between gap-2">
+
                       {closed ? (
                         <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.035] px-2.5 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-white/30">
                           <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
@@ -1015,12 +1089,12 @@ const SavedJobsHome = () => {
                             Featured
                           </span>
                         )}
+
                     </div>
 
                     {/* JOB INFO */}
 
                     <div className="mt-6 grid grid-cols-2 gap-2.5">
-                      {/* LOCATION */}
 
                       <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
                         <div className="flex items-center gap-2">
@@ -1040,8 +1114,6 @@ const SavedJobsHome = () => {
                         </p>
                       </div>
 
-                      {/* JOB TYPE */}
-
                       <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
                         <div className="flex items-center gap-2">
                           <BriefcaseBusiness
@@ -1058,8 +1130,6 @@ const SavedJobsHome = () => {
                           {getJobType(job)}
                         </p>
                       </div>
-
-                      {/* EMPLOYMENT */}
 
                       <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
                         <div className="flex items-center gap-2">
@@ -1078,8 +1148,6 @@ const SavedJobsHome = () => {
                         </p>
                       </div>
 
-                      {/* SALARY */}
-
                       <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
                         <div className="flex items-center gap-2">
                           <span className="flex h-[13px] w-[13px] items-center justify-center rounded bg-emerald-500/10 text-[8px] font-black text-emerald-400">
@@ -1096,17 +1164,20 @@ const SavedJobsHome = () => {
                             "Not disclosed"}
                         </p>
                       </div>
+
                     </div>
 
                     {/* APPLY METHODS */}
 
                     {applyMethods.length > 0 && (
                       <div className="mt-4">
+
                         <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.12em] text-white/25">
                           Application method
                         </p>
 
                         <div className="flex flex-wrap gap-1.5">
+
                           {applyMethods.map(
                             (method, index) => {
                               const normalized =
@@ -1143,17 +1214,17 @@ const SavedJobsHome = () => {
                               );
                             }
                           )}
+
                         </div>
                       </div>
                     )}
-
-                    {/* DIVIDER */}
 
                     <div className="my-5 border-t border-white/[0.06]" />
 
                     {/* DATES */}
 
                     <div className="space-y-2">
+
                       {deadlineDate && (
                         <div className="flex items-center gap-2">
                           <Clock3
@@ -1192,15 +1263,21 @@ const SavedJobsHome = () => {
                           </span>
                         </div>
                       )}
+
                     </div>
 
                     <div className="flex-1" />
+
                   </div>
 
-                  {/* FOOTER */}
+                  {/* =================================================
+                      FOOTER
+                  ================================================= */}
 
                   <div className="border-t border-white/[0.06] bg-white/[0.018] p-4">
+
                     <div className="flex gap-2">
+
                       {/* VIEW DETAILS */}
 
                       <Link
@@ -1220,9 +1297,7 @@ const SavedJobsHome = () => {
                         >
                           Job closed
                         </button>
-                      ) : hasWhatsappApply(
-                          job
-                        ) &&
+                      ) : hasWhatsappApply(job) &&
                         job?.whatsappNumber ? (
                         <a
                           href={`https://wa.me/${String(
@@ -1238,9 +1313,7 @@ const SavedJobsHome = () => {
                           Apply
                           <MessageCircle size={12} />
                         </a>
-                      ) : hasEmailApply(
-                          job
-                        ) ? (
+                      ) : hasEmailApply(job) ? (
                         <Link
                           to={`/jobs/${job._id}`}
                           className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#4f6fff] to-[#7448ff] px-3 text-xs font-bold text-white shadow-[0_8px_25px_rgba(79,111,255,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(79,111,255,0.25)]"
@@ -1267,6 +1340,7 @@ const SavedJobsHome = () => {
                           <ExternalLink size={12} />
                         </Link>
                       )}
+
                     </div>
 
                     {!closed && (
@@ -1277,12 +1351,15 @@ const SavedJobsHome = () => {
                         </span>
                       </p>
                     )}
+
                   </div>
+
                 </article>
               );
             })}
           </div>
         )}
+
       </main>
 
       {/* =========================================================
@@ -1291,9 +1368,13 @@ const SavedJobsHome = () => {
 
       {showRemoveModal && selectedJob && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4 backdrop-blur-md">
+
           <div className="w-full max-w-md overflow-hidden rounded-[28px] border border-white/[0.1] bg-[#111318] shadow-[0_30px_100px_rgba(0,0,0,0.65)]">
+
             <div className="p-6 sm:p-7">
+
               <div className="flex items-start justify-between">
+
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-red-500/10 bg-red-500/[0.08] text-red-400">
                   <Trash2 size={19} />
                 </div>
@@ -1301,10 +1382,12 @@ const SavedJobsHome = () => {
                 <button
                   type="button"
                   onClick={closeRemoveModal}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl text-white/30 transition hover:bg-white/[0.05] hover:text-white"
+                  disabled={deleting}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl text-white/30 transition hover:bg-white/[0.05] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <X size={17} />
                 </button>
+
               </div>
 
               <h2 className="mt-6 text-xl font-black tracking-tight text-white">
@@ -1321,10 +1404,10 @@ const SavedJobsHome = () => {
               </p>
 
               <div className="mt-5 flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-3">
+
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.04]">
-                  {getCompanyLogo(
-                    selectedJob
-                  ) ? (
+
+                  {getCompanyLogo(selectedJob) ? (
                     <img
                       src={getCompanyLogo(
                         selectedJob
@@ -1339,9 +1422,11 @@ const SavedJobsHome = () => {
                       )}
                     </span>
                   )}
+
                 </div>
 
                 <div className="min-w-0">
+
                   <p className="truncate text-sm font-bold text-white/80">
                     {selectedJob?.title ||
                       "Untitled Job"}
@@ -1352,14 +1437,17 @@ const SavedJobsHome = () => {
                       selectedJob
                     )}
                   </p>
+
                 </div>
               </div>
 
               <div className="mt-6 flex gap-3">
+
                 <button
                   type="button"
                   onClick={closeRemoveModal}
-                  className="h-11 flex-1 rounded-xl border border-white/[0.09] bg-white/[0.025] text-sm font-semibold text-white/60 transition hover:bg-white/[0.06] hover:text-white"
+                  disabled={deleting}
+                  className="h-11 flex-1 rounded-xl border border-white/[0.09] bg-white/[0.025] text-sm font-semibold text-white/60 transition hover:bg-white/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Keep saved
                 </button>
@@ -1374,7 +1462,9 @@ const SavedJobsHome = () => {
                     ? "Removing..."
                     : "Remove job"}
                 </button>
+
               </div>
+
             </div>
           </div>
         </div>
@@ -1384,3 +1474,4 @@ const SavedJobsHome = () => {
 };
 
 export default SavedJobsHome;
+
