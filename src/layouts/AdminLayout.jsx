@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import {
   NavLink,
   Outlet,
-  useLocation,
   useNavigate,
+  Navigate,
 } from "react-router-dom";
 
 import {
@@ -20,6 +20,8 @@ import {
   X,
   ExternalLink,
 } from "lucide-react";
+
+import { useGetProfileQuery } from "../RTK/AuthService";
 
 const navItems = [
   {
@@ -57,17 +59,100 @@ const navItems = [
 
 export default function AdminLayout() {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [mobileSidebarOpen, setMobileSidebarOpen] =
     useState(false);
+
+  // =====================================================
+  // GET CURRENT USER
+  // =====================================================
+
+  const {
+    data: profileData,
+    isLoading,
+    isFetching,
+    isError,
+  } = useGetProfileQuery();
+
+  /*
+    Depending on your API response, user can be:
+
+    {
+      user: {
+        _id: "...",
+        name: "...",
+        role: "admin"
+      }
+    }
+
+    OR directly:
+
+    {
+      _id: "...",
+      name: "...",
+      role: "admin"
+    }
+  */
+
+  const user = profileData?.user || profileData;
+
+  const userRole = user?.role;
+
+  // =====================================================
+  // ADMIN ACCESS CHECK
+  // =====================================================
+
+  /*
+    While profile is loading, don't redirect.
+    Otherwise a refresh can briefly redirect the admin.
+  */
+
+  if (isLoading || isFetching) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#050608] text-white">
+        <div className="flex flex-col items-center">
+
+          <div
+            className="
+              mb-4
+              h-9
+              w-9
+              animate-spin
+              rounded-full
+              border-2
+              border-white/10
+              border-t-white
+            "
+          />
+
+          <p className="text-sm font-medium text-slate-400">
+            Checking admin access...
+          </p>
+
+        </div>
+      </div>
+    );
+  }
+
+  /*
+    If API error / no user / non-admin:
+    redirect to public website.
+  */
+
+  if (
+    isError ||
+    !user ||
+    userRole !== "admin"
+  ) {
+    return <Navigate to="/" replace />;
+  }
 
   // =====================================================
   // LOGOUT
   // =====================================================
 
   const handleLogout = () => {
-    // Clear auth data
+    // Clear authentication data
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("auth");
@@ -77,15 +162,18 @@ export default function AdminLayout() {
     setMobileSidebarOpen(false);
 
     // Go to public website
-    navigate("/", { replace: true });
+    navigate("/", {
+      replace: true,
+    });
   };
 
   // =====================================================
-  // SWITCH TO PUBLIC
+  // SWITCH TO PUBLIC WEBSITE
   // =====================================================
 
   const handleSwitchToPublic = () => {
     setMobileSidebarOpen(false);
+
     navigate("/");
   };
 
@@ -97,8 +185,13 @@ export default function AdminLayout() {
     setMobileSidebarOpen(false);
   };
 
+  // =====================================================
+  // UI
+  // =====================================================
+
   return (
     <div className="h-screen overflow-hidden bg-[#050608] text-white">
+
       <div className="flex h-full">
 
         {/* =================================================
@@ -173,7 +266,10 @@ export default function AdminLayout() {
               px-4
             "
           >
+
             <div className="flex items-center gap-3">
+
+              {/* LOGO */}
 
               <div
                 className="
@@ -191,6 +287,8 @@ export default function AdminLayout() {
                 <ShieldCheck size={20} />
               </div>
 
+              {/* BRAND */}
+
               <div>
                 <p className="text-sm font-bold text-white">
                   JoblessJob
@@ -203,7 +301,7 @@ export default function AdminLayout() {
 
             </div>
 
-            {/* Mobile close */}
+            {/* MOBILE CLOSE */}
 
             <button
               type="button"
@@ -227,13 +325,18 @@ export default function AdminLayout() {
             >
               <X size={19} />
             </button>
+
           </div>
 
           {/* =================================================
-              NAVIGATION
+              SIDEBAR CONTENT
           ================================================= */}
 
           <div className="flex min-h-0 flex-1 flex-col">
+
+            {/* =================================================
+                NAVIGATION
+            ================================================= */}
 
             <nav
               className="
@@ -251,6 +354,7 @@ export default function AdminLayout() {
               {/* SECTION LABEL */}
 
               <div className="mb-3 px-2 pt-1">
+
                 <p
                   className="
                     text-[10px]
@@ -262,7 +366,10 @@ export default function AdminLayout() {
                 >
                   Management
                 </p>
+
               </div>
+
+              {/* NAV ITEMS */}
 
               {navItems.map(
                 ({
@@ -300,6 +407,9 @@ export default function AdminLayout() {
                   >
                     {({ isActive }) => (
                       <>
+
+                        {/* ICON */}
+
                         <span
                           className={`
                             flex
@@ -321,18 +431,24 @@ export default function AdminLayout() {
                           <Icon size={16} />
                         </span>
 
+                        {/* LABEL */}
+
                         <span className="flex-1">
                           {label}
                         </span>
 
+                        {/* ACTIVE DOT */}
+
                         {isActive && (
                           <span className="h-1.5 w-1.5 rounded-full bg-black" />
                         )}
+
                       </>
                     )}
                   </NavLink>
                 )
               )}
+
             </nav>
 
             {/* =================================================
@@ -348,7 +464,9 @@ export default function AdminLayout() {
               "
             >
 
-              {/* SWITCH TO PUBLIC */}
+              {/* =================================================
+                  SWITCH TO PUBLIC
+              ================================================= */}
 
               <button
                 type="button"
@@ -371,6 +489,7 @@ export default function AdminLayout() {
                   hover:text-blue-400
                 "
               >
+
                 <span
                   className="
                     flex
@@ -393,9 +512,12 @@ export default function AdminLayout() {
                   size={14}
                   className="rotate-180"
                 />
+
               </button>
 
-              {/* LOGOUT */}
+              {/* =================================================
+                  LOGOUT
+              ================================================= */}
 
               <button
                 type="button"
@@ -417,6 +539,7 @@ export default function AdminLayout() {
                   hover:text-red-400
                 "
               >
+
                 <span
                   className="
                     flex
@@ -434,9 +557,12 @@ export default function AdminLayout() {
                 <span className="flex-1 text-left">
                   Logout
                 </span>
+
               </button>
 
-              {/* ADMIN STATUS */}
+              {/* =================================================
+                  ADMIN STATUS
+              ================================================= */}
 
               <div
                 className="
@@ -449,6 +575,7 @@ export default function AdminLayout() {
                   py-2.5
                 "
               >
+
                 <div className="flex items-center gap-2">
 
                   <span
@@ -474,10 +601,13 @@ export default function AdminLayout() {
                   </span>
 
                 </div>
+
               </div>
 
             </div>
+
           </div>
+
         </aside>
 
         {/* =====================================================
@@ -535,14 +665,18 @@ export default function AdminLayout() {
                   bg-white/[0.03]
                   text-slate-400
                   transition
+
                   hover:bg-white/[0.07]
                   hover:text-white
+
                   md:hidden
                 "
                 aria-label="Open admin menu"
               >
                 <Menu size={19} />
               </button>
+
+              {/* HEADER TITLE */}
 
               <div className="min-w-0">
 
@@ -576,7 +710,9 @@ export default function AdminLayout() {
 
             </div>
 
-            {/* RIGHT */}
+            {/* =================================================
+                HEADER RIGHT
+            ================================================= */}
 
             <div
               className="
@@ -587,7 +723,7 @@ export default function AdminLayout() {
               "
             >
 
-              {/* PUBLIC BUTTON - MOBILE */}
+              {/* PUBLIC WEBSITE BUTTON */}
 
               <button
                 type="button"
@@ -613,10 +749,13 @@ export default function AdminLayout() {
                   sm:flex
                 "
               >
+
                 <ExternalLink size={14} />
+
                 <span className="hidden lg:inline">
                   Website
                 </span>
+
               </button>
 
               {/* ADMIN BADGE */}
@@ -637,6 +776,7 @@ export default function AdminLayout() {
                   text-emerald-400
                 "
               >
+
                 <span
                   className="
                     h-1.5
@@ -647,13 +787,15 @@ export default function AdminLayout() {
                 />
 
                 Admin
+
               </div>
 
             </div>
+
           </header>
 
           {/* =================================================
-              ONLY MAIN CONTENT SCROLLS
+              MAIN CONTENT SCROLL
           ================================================= */}
 
           <div
@@ -669,16 +811,19 @@ export default function AdminLayout() {
               hover:scrollbar-thumb-white/20
             "
           >
+
             <div className="p-4 md:p-7">
               <Outlet />
             </div>
+
           </div>
 
         </main>
+
       </div>
 
       {/* =====================================================
-          SCROLLBAR
+          CUSTOM SCROLLBAR
       ===================================================== */}
 
       <style>
@@ -733,6 +878,7 @@ export default function AdminLayout() {
           }
         `}
       </style>
+
     </div>
   );
 }
