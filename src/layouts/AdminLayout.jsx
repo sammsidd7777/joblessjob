@@ -107,32 +107,31 @@ export default function AdminLayout() {
     Otherwise a refresh can briefly redirect the admin.
   */
 
-  if (isLoading || isFetching) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#050608] text-white">
-        <div className="flex flex-col items-center">
+ if (isLoading || isFetching) {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#050608] text-white">
+      <div className="flex flex-col items-center">
 
-          <div
-            className="
-              mb-4
-              h-9
-              w-9
-              animate-spin
-              rounded-full
-              border-2
-              border-white/10
-              border-t-white
-            "
-          />
+        {/* Premium Loader */}
+        <div className="relative mb-5 h-10 w-10">
+          <div className="absolute inset-0 animate-spin rounded-full border-2 border-white/[0.08] border-t-white" />
 
-          <p className="text-sm font-medium text-slate-400">
-            Checking admin access...
-          </p>
-
+          <div className="absolute inset-[9px] rounded-full bg-white/[0.04]" />
         </div>
+
+        {/* Text */}
+        <p className="text-sm font-medium tracking-tight text-slate-300">
+          Checking admin access
+        </p>
+
+        <p className="mt-1 text-xs text-slate-500">
+          Please wait...
+        </p>
+
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   /*
     If API error / no user / non-admin:

@@ -84,11 +84,7 @@ const Login = ({ onClose }) => {
           onClose();
         }
 
-        setTimeout(() => {
-          navigate("/admin", {
-            replace: true,
-          });
-        }, 300);
+   
 
         return;
       }

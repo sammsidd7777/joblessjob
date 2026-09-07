@@ -2,17 +2,22 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const savedJobsApi = createApi({
   reducerPath: "savedJobsApi",
+
   baseQuery: fetchBaseQuery({
     baseUrl: "https://job-hunt-backend-sigma.vercel.app/jobs",
     credentials: "include",
   }),
+
   tagTypes: ["SavedJobs"],
+
   endpoints: (builder) => ({
+    // Get Saved Jobs
     getSavedJobs: builder.query({
       query: () => "/saved-jobs",
-    //   providesTags: ["SavedJobs"],
+      providesTags: ["SavedJobs"],
     }),
 
+    // Remove Saved Job
     deleteSavedJob: builder.mutation({
       query: (id) => ({
         url: `/saved-jobs/${id}`,
@@ -20,18 +25,20 @@ export const savedJobsApi = createApi({
       }),
       invalidatesTags: ["SavedJobs"],
     }),
-    savedJob :builder.mutation({
-        query:(id) =>({
-            url:`/saved-jobs/${id}`,
-            method:"POST",
 
-        })
-    })
+    // Save Job
+    savedJob: builder.mutation({
+      query: (id) => ({
+        url: `/saved-jobs/${id}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["SavedJobs"],
+    }),
   }),
 });
 
 export const {
   useGetSavedJobsQuery,
   useDeleteSavedJobMutation,
-  useSavedJobMutation
+  useSavedJobMutation,
 } = savedJobsApi;
